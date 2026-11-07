@@ -1,0 +1,2434 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#5c1621">
+<meta name="color-scheme" content="light dark">
+<title>פראג — תוכנית הטיול</title>
+<style>
+:root{
+  --bg:#f6f1ea;--card:#fffdfa;--ink:#24191b;--muted:#6f6264;--line:#e6dccf;
+  --accent:#7a1f2b;--accent-ink:#fff;--accent-soft:#f3e3e3;--gold:#a87b22;--gold-soft:#f5ead2;
+  --ok:#2f6b47;--ok-soft:#e1efe5;--warn:#9a5b00;--warn-soft:#fbecd3;--info:#2d5374;--info-soft:#e0eaf3;
+  --hero1:#5c1621;--hero2:#8a2a37;--shadow:0 1px 2px rgba(60,20,25,.06),0 4px 14px rgba(60,20,25,.06);
+  --r:16px;--tap:44px;
+  --sans:system-ui,-apple-system,"Segoe UI","Arial Hebrew","Noto Sans Hebrew",Arial,sans-serif;
+  --serif:"Frank Ruehl CLM","David","Times New Roman",Georgia,serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){
+  --bg:#131012;--card:#1d181b;--ink:#f1e9e2;--muted:#a99d9b;--line:#33292d;
+  --accent:#e0808c;--accent-ink:#1a0d10;--accent-soft:#3a1d23;--gold:#dcb764;--gold-soft:#3a3020;
+  --ok:#7cc79a;--ok-soft:#1d3326;--warn:#f0b35c;--warn-soft:#3b2c14;--info:#8fb8de;--info-soft:#1c2a38;
+  --hero1:#2a0b11;--hero2:#4a1520;--shadow:0 1px 2px rgba(0,0,0,.4);
+}}
+:root[data-theme=dark]{
+  --bg:#131012;--card:#1d181b;--ink:#f1e9e2;--muted:#a99d9b;--line:#33292d;
+  --accent:#e0808c;--accent-ink:#1a0d10;--accent-soft:#3a1d23;--gold:#dcb764;--gold-soft:#3a3020;
+  --ok:#7cc79a;--ok-soft:#1d3326;--warn:#f0b35c;--warn-soft:#3b2c14;--info:#8fb8de;--info-soft:#1c2a38;
+  --hero1:#2a0b11;--hero2:#4a1520;--shadow:0 1px 2px rgba(0,0,0,.4);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-padding-top:120px}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 var(--sans);padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+a{color:var(--accent)}
+button{font:inherit;color:inherit}
+.ltr{direction:ltr;unicode-bidi:isolate}
+.wrap{max-width:720px;margin:0 auto;padding:0 14px}
+svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+
+/* ---------- header ---------- */
+.top{position:sticky;top:0;z-index:20;background:var(--hero1);color:#fbefd9;padding-top:env(safe-area-inset-top);box-shadow:0 2px 10px rgba(0,0,0,.18)}
+.top .row{display:flex;align-items:center;gap:8px;min-height:56px}
+.brand{flex:1;min-width:0}
+.brand h1{margin:0;font:700 20px/1.15 var(--serif);color:#f0cf7f;letter-spacing:.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brand .dates{font-size:12.5px;opacity:.85}
+.ibtn{width:var(--tap);height:var(--tap);display:inline-grid;place-items:center;border:0;background:rgba(255,255,255,.08);border-radius:12px;color:#fbefd9;cursor:pointer}
+.ibtn:active{background:rgba(255,255,255,.2)}
+.ibtn[aria-pressed=true]{background:#f0cf7f;color:#3a0c14}
+.searchbar{display:none;padding:0 0 10px}
+.top.searching .searchbar{display:block}
+.searchbar input{width:100%;height:46px;border-radius:12px;border:1px solid rgba(240,207,127,.4);background:rgba(0,0,0,.25);color:#fff;padding:0 14px;font:inherit;outline:none}
+.searchbar input::placeholder{color:rgba(251,239,217,.6)}
+.searchbar input:focus{border-color:#f0cf7f}
+
+/* ---------- hero ---------- */
+.hero{background:linear-gradient(180deg,var(--hero1),var(--hero2));color:#fbefd9;position:relative;overflow:hidden}
+.hero .wrap{padding-top:6px;padding-bottom:58px;position:relative;z-index:1}
+.skyline{position:absolute;inset:auto 0 0 0;height:64px;width:100%;color:#f0cf7f;opacity:.28}
+.badges{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 12px}
+.badge{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;padding:4px 10px;border-radius:999px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14)}
+.badge .dot{width:8px;height:8px;border-radius:50%;background:#8fd6a6}
+.badge.off .dot{background:#f0b35c}
+.status{font-size:15px;margin:0 0 12px}
+.status b{color:#f0cf7f}
+.cta{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:50px;border:0;border-radius:14px;background:#f0cf7f;color:#3a0c14;font-weight:700;font-size:16px;cursor:pointer;box-shadow:0 3px 0 #b48f3c}
+.cta:active{transform:translateY(2px);box-shadow:0 1px 0 #b48f3c}
+.sample{margin:10px 0 0;font-size:12.5px;background:rgba(0,0,0,.25);border-radius:10px;padding:6px 10px}
+
+/* ---------- views ---------- */
+main{margin-top:-40px;position:relative;z-index:2}
+.view{display:none}
+.view.on{display:block}
+.vh{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:18px 2px 10px}
+.vh h2{margin:0;font:700 22px/1.2 var(--serif);color:var(--ink)}
+.vh .sub{font-size:13px;color:var(--muted)}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 10px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;min-height:38px;padding:6px 14px;border-radius:999px;border:1px solid var(--line);background:var(--card);font-size:14px;cursor:pointer;white-space:nowrap}
+.chip[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+.chip.today{border-color:var(--gold);box-shadow:inset 0 0 0 1px var(--gold)}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);margin:0 0 12px;overflow:hidden}
+.card.pad{padding:14px}
+.card h3{margin:0 0 4px;font-size:17px;line-height:1.3}
+.muted{color:var(--muted)}
+.small{font-size:13.5px}
+
+/* day */
+details.day>summary{list-style:none;display:flex;align-items:center;gap:12px;padding:14px;cursor:pointer;min-height:64px}
+details.day>summary::-webkit-details-marker{display:none}
+.dnum{flex:none;width:48px;height:52px;border-radius:12px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;text-align:center;line-height:1}
+.dnum b{font:700 21px/1 var(--serif);display:block}
+.dnum span{font-size:11px}
+.day.is-today .dnum{background:var(--accent);color:var(--accent-ink)}
+.dtitle{flex:1;min-width:0}
+.dtitle h3{margin:0}
+.dtitle .muted{font-size:13px}
+.chev{transition:transform .2s;color:var(--muted)}
+details[open]>summary .chev{transform:rotate(180deg)}
+.tl{list-style:none;margin:0;padding:0 14px 8px}
+.it{position:relative;display:grid;grid-template-columns:52px 1fr;gap:10px;padding:10px 0 12px;border-top:1px dashed var(--line)}
+.it .t{font-weight:700;font-variant-numeric:tabular-nums;font-size:15px;color:var(--gold);padding-top:1px;text-align:center}
+.it .t small{display:block;font-weight:400;font-size:11.5px;color:var(--muted)}
+.it h4{margin:0;font-size:16px;line-height:1.35}
+.it p{margin:3px 0 0;font-size:14px;color:var(--muted)}
+.it.done h4{text-decoration:line-through;text-decoration-color:var(--muted);opacity:.65}
+.it.now{background:linear-gradient(90deg,transparent,var(--gold-soft) 30%);margin:0 -14px;padding-inline:14px;border-radius:0}
+.it.now .t{color:var(--accent)}
+.flag{display:inline-block;font-size:11px;font-weight:700;padding:1px 8px;border-radius:999px;margin-inline-start:6px;vertical-align:2px}
+.flag.now{background:var(--accent);color:var(--accent-ink)}
+.flag.next{background:var(--gold-soft);color:var(--gold);border:1px solid var(--gold)}
+
+/* place */
+.pl{padding:14px}
+.pl .hd{display:flex;gap:10px;align-items:flex-start}
+.pl .hd>div{flex:1;min-width:0}
+.pl .en{font-size:13.5px;color:var(--muted)}
+.meta{display:flex;flex-wrap:wrap;gap:4px 12px;margin:8px 0 0;font-size:13.5px;color:var(--muted)}
+.meta span{display:inline-flex;gap:4px;align-items:center}
+.why{margin:8px 0 0;font-size:14.5px}
+.pl.done{opacity:.72}
+.src{margin-top:8px;font-size:12.5px}
+.src a{margin-inline-end:10px}
+
+/* tags */
+.tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
+.tag{font-size:12px;padding:2px 9px;border-radius:999px;background:var(--line);color:var(--ink);white-space:nowrap}
+.tag.t-red{background:var(--accent-soft);color:var(--accent)}
+.tag.t-gold{background:var(--gold-soft);color:var(--gold)}
+.tag.t-ok{background:var(--ok-soft);color:var(--ok)}
+.tag.t-warn{background:var(--warn-soft);color:var(--warn)}
+.tag.t-info{background:var(--info-soft);color:var(--info)}
+.tag.t-pride{background:linear-gradient(90deg,#e40303,#ff8c00,#ffed00,#008026,#004dff,#750787);color:#fff;text-shadow:0 1px 1px rgba(0,0,0,.5)}
+
+/* actions */
+.acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.act{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;padding:0 12px;border-radius:11px;border:1px solid var(--line);background:var(--bg);color:var(--ink);text-decoration:none;font-size:14px;cursor:pointer}
+.act.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+.act.book{background:#c9a227;border-color:#c9a227;color:#1d1406;font-weight:700}
+.act.chk[aria-pressed=true]{background:var(--ok-soft);border-color:var(--ok);color:var(--ok);font-weight:600}
+.act svg.i{width:18px;height:18px}
+.it .acts{gap:5px}.it .act{padding:0 10px;min-width:42px}
+.addr{display:block;margin-top:6px;font-size:13.5px;color:var(--muted)}
+
+/* practical */
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:14.5px;margin:8px 0 0}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0;font-weight:500}
+.sos{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.sos a,.sos div{display:block;text-decoration:none;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px;min-height:64px}
+.sos b{display:block;font:700 24px/1.1 var(--sans);color:var(--accent)}
+.sos b.long{font-size:16px;padding-top:4px}
+.sos span{font-size:13px;color:var(--muted)}
+.phr{width:100%;border-collapse:collapse;font-size:14.5px}
+.phr td{padding:9px 6px;border-top:1px solid var(--line);vertical-align:top}
+.phr tr:first-child td{border-top:0}
+.phr .cs{font-weight:600}
+.phr .tr{color:var(--gold);font-size:13.5px}
+.conv{display:flex;gap:8px;align-items:center;margin-top:8px}
+.conv input{flex:1;min-width:0;height:46px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);padding:0 12px;font:inherit;font-size:17px}
+.conv output{flex:1;font-weight:700;font-size:17px}
+.tip{border-inline-start:4px solid var(--gold)}
+.tip h3{display:flex;gap:8px;align-items:center}
+ol.steps{margin:6px 0 0;padding-inline-start:20px;font-size:14.5px}
+ol.steps li{margin:3px 0}
+
+/* search results */
+.res-group{margin:6px 2px 4px;font-size:13px;color:var(--muted);font-weight:600}
+.empty{text-align:center;color:var(--muted);padding:30px 10px}
+mark{background:var(--gold-soft);color:inherit;border-radius:3px}
+
+/* bottom tabs */
+.tabs{position:fixed;inset:auto 0 0 0;z-index:30;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom);box-shadow:0 -4px 16px rgba(0,0,0,.06)}
+.tabs .wrap{display:grid;grid-template-columns:repeat(6,1fr);padding:0 4px}
+.tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;min-height:62px;border:0;background:none;cursor:pointer;color:var(--muted);font-size:11.5px;position:relative}
+.tab .em{font-size:21px;line-height:1.1;filter:grayscale(.6);opacity:.8}
+.tab[aria-selected=true]{color:var(--accent);font-weight:700}
+.tab[aria-selected=true] .em{filter:none;opacity:1}
+.tab[aria-selected=true]::before{content:"";position:absolute;top:0;inset-inline:22%;height:3px;border-radius:0 0 3px 3px;background:var(--accent)}
+
+/* sheet + toast */
+.sheet{position:fixed;inset:0;z-index:50;display:none;background:rgba(10,4,6,.55);align-items:flex-end}
+.sheet.on{display:flex}
+.sheet .box{background:var(--card);color:var(--ink);width:100%;max-width:720px;margin:0 auto;border-radius:20px 20px 0 0;padding:18px 18px calc(18px + env(safe-area-inset-bottom));max-height:88vh;overflow:auto}
+.sheet h3{margin:0 0 8px;font:700 20px/1.25 var(--serif)}
+.sheet .close{width:100%;margin-top:14px}
+.taxi{text-align:center}
+.taxi .cz{font-size:15px;color:var(--muted);margin:0 0 10px}
+.taxi .big{font-size:28px;font-weight:800;line-height:1.3;margin:6px 0;word-break:break-word}
+.taxi .nm{font-size:18px;color:var(--accent);font-weight:700}
+.toast{position:fixed;left:50%;bottom:calc(86px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);opacity:0;z-index:60;background:#24191b;color:#fbefd9;padding:10px 16px;border-radius:12px;font-size:14px;transition:.2s;pointer-events:none;max-width:90vw}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* static snapshot mode (saved file opened without JS, e.g. iOS Files preview) */
+html.snap .view{display:block!important}
+html.snap .tabs,html.snap .ibtn,html.snap .cta,html.snap .act.chk,html.snap .act.js{display:none!important}
+html.snap details.day>.tl{display:block}
+html.snap #results{display:none!important}
+@media print{.tabs,.top,.cta,.acts{display:none!important}.view{display:block!important}}
+</style>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="פראג 2026">
+<meta name="theme-color" content="#7a1f2b">
+</head>
+<body>
+
+<header class="top" id="top">
+  <div class="wrap">
+    <div class="row">
+      <div class="brand">
+        <h1 id="t-title">פראג</h1>
+        <div class="dates" id="t-dates"></div>
+      </div>
+      <button class="ibtn" id="b-search" aria-label="חיפוש" aria-pressed="false"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg></button>
+      <button class="ibtn" id="b-theme" aria-label="מצב כהה/בהיר"><svg class="i" viewBox="0 0 24 24"><path d="M21 13A9 9 0 1 1 11 3a7 7 0 0 0 10 10z"/></svg></button>
+    </div>
+    <div class="searchbar"><input id="q" type="search" inputmode="search" placeholder="חיפוש: מקום, אזור, תגית…" aria-label="חיפוש" autocomplete="off"></div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <div class="badges">
+      <span class="badge" id="b-net"><span class="dot"></span><span>מחובר</span></span>
+      <span class="badge" id="b-cache" hidden>✓ שמור במכשיר</span>
+      <span class="badge" id="b-ver"></span>
+    </div>
+    <p class="status" id="status"></p>
+    <button class="cta" id="b-save" data-savehelp>📴 איך לשמור לאופליין</button>
+    <p class="sample" id="sample" hidden>⚠️ נתוני דוגמה — התוכן הסופי יוחלף</p>
+  </div>
+  <svg class="skyline" viewBox="0 0 400 64" preserveAspectRatio="none" aria-hidden="true"><path fill="currentColor" d="M0 64V50h18v-6h8v6h10V40l6-8 6 8v10h12V46h10v-8h4v-6l3-10 3 10v6h4v8h8v4h6V36h4l2-12 2 12h4v14h10v-6h22V30h4V18l4-6 4 6v12h4V22l2-4 2 4v8h6v14h8V34h3l3-14 3 14h3v16h16V42h6v-6h12v6h10V28h4l3-10 3 10h4v22h8v-4c0-6 5-10 10-10s10 4 10 10v4h8V38h4l4-16 4 16h4v12h18V44h10v6h22v-8h6v8h18v14z"/><path fill="currentColor" opacity=".7" d="M0 64c40-10 80-10 120 0s80 10 120 0 80-10 120 0h40v0H0z"/></svg>
+</section>
+
+<main class="wrap" id="views">
+  <section class="view" id="v-schedule" data-tab="schedule"></section>
+  <section class="view" id="v-food" data-tab="food"></section>
+  <section class="view" id="v-sights" data-tab="sights"></section>
+  <section class="view" id="v-night" data-tab="night"></section>
+  <section class="view" id="v-shopping" data-tab="shopping"></section>
+  <section class="view" id="v-practical" data-tab="practical"></section>
+  <section class="view" id="results"></section>
+</main>
+
+<nav class="tabs" role="tablist" aria-label="ניווט">
+  <div class="wrap">
+    <button class="tab" role="tab" data-go="schedule"><span class="em">🗓️</span>לו״ז</button>
+    <button class="tab" role="tab" data-go="food"><span class="em">🍽️</span>אוכל</button>
+    <button class="tab" role="tab" data-go="sights"><span class="em">🏰</span>אטרקציות</button>
+    <button class="tab" role="tab" data-go="night"><span class="em">🏳️‍🌈</span>לילה</button>
+    <button class="tab" role="tab" data-go="shopping"><span class="em">🛍️</span>שופינג</button>
+    <button class="tab" role="tab" data-go="practical"><span class="em">🧭</span>מעשי</button>
+  </div>
+</nav>
+
+<div class="sheet" id="sheet" role="dialog" aria-modal="true"><div class="box" id="sheet-box"></div></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<!-- ================= PLAN DATA (see schema.md) ================= -->
+<script id="plan-data" type="application/json">
+{
+ "meta": {
+  "title": "פראג 2026",
+  "subtitle": "חנן וחבר · 8–11 בנובמבר",
+  "startDate": "2026-11-08",
+  "endDate": "2026-11-11",
+  "timezone": "Europe/Prague",
+  "travelers": [
+   "חנן",
+   "חבר"
+  ],
+  "version": "v1",
+  "updatedAt": "2026-11-07",
+  "sample": false,
+  "currency": {
+   "code": "CZK",
+   "symbol": "Kč",
+   "perILS": 6.8,
+   "note": "שער Wise 7.11.2026: 1 Kč ≈ 0.146 ₪. משלמים בכרטיס כמעט בכל מקום; לבחור תמיד לחייב בקורונות (CZK)."
+  }
+ },
+ "flights": [
+  {
+   "id": "f-out",
+   "direction": "out",
+   "airline": "EL AL",
+   "flightNo": "LY2523",
+   "from": "TLV",
+   "to": "PRG",
+   "depart": "2026-11-08T17:55",
+   "arrive": "2026-11-08T20:55",
+   "terminal": "3",
+   "bookingRef": "",
+   "notes": "יציאה מטרמינל 3 בנתב״ג, נחיתה בטרמינל 1 בפראג. שעות משוערות — לאמת ביום הטיסה."
+  },
+  {
+   "id": "f-back",
+   "direction": "back",
+   "airline": "EL AL",
+   "flightNo": "LY2524",
+   "from": "PRG",
+   "to": "TLV",
+   "depart": "2026-11-11T22:00",
+   "arrive": "",
+   "terminal": "1",
+   "bookingRef": "",
+   "notes": "⚠️ לאשר שעה! הנחה: רביעי ~22:00. לצאת מהמלון עד 19:00."
+  }
+ ],
+ "hotel": {
+  "name": "The Grand Mark Prague",
+  "nameHe": "גרנד מארק ★★★★★",
+  "address": "Hybernská 12, 110 00 Praha 1",
+  "mapsUrl": "https://www.google.com/maps/search/?api=1&query=The+Grand+Mark+Prague%2C+Hybernsk%C3%A1+12%2C+Praha+1",
+  "phone": "+420 226 226 111",
+  "checkIn": "2026-11-08T21:45",
+  "checkOut": "2026-11-11T11:00",
+  "bookingRef": "",
+  "notes": "נובה מסטו, ליד Náměstí Republiky והבית העירוני. מגיעים ~21:45. צ׳ק-אאוט ברביעי עד 11:00 — מזוודות בשמירה עד ~18:45."
+ },
+ "nightIntro": "שני ושלישי ערבים שקטים בפראג — מתחילים ב-21:30 ולא מחכים לחצות. רוב הברים בווינוהרדי (Bolt ~8 דק׳), Friends ו-Q Café במרכז. ⚠️ = לא מאומת לגמרי. סגורים ולא כלולים: TerMax, Story, Valentino, Alcatraz, The Mug, Hugo, Fresh.",
+ "days": [
+  {
+   "date": "2026-11-08",
+   "title": "נחיתה וערב ראשון",
+   "summary": "טיסת ערב, צ׳ק-אין ודרינק ראשון ליד המלון · בבוקר: כל ההזמנות מראש (כפתורי 🎟️).",
+   "items": [
+    {
+     "id": "d1-b1",
+     "time": "10:00",
+     "title": "📲 הזמנות: מצודת פראג (שני 9:00)",
+     "placeId": "castle",
+     "note": "כרטיס Main Circuit, 450 Kč, תקף יומיים. קונים אונליין כדי לא לעמוד בקופה.",
+     "tags": [
+      "reserve"
+     ]
+    },
+    {
+     "id": "d1-b2",
+     "time": "10:05",
+     "title": "📲 הזמנות: Kuchyň (שני 12:15)",
+     "placeId": "kuchyn",
+     "note": "שולחן ל-2 ב-12:15. אפשר גם בטלפון.",
+     "tags": [
+      "reserve"
+     ]
+    },
+    {
+     "id": "d1-b3",
+     "time": "10:10",
+     "title": "📲 הזמנות: Image Theatre (שני 20:00)",
+     "placeId": "image-theatre",
+     "note": "לבדוק שיש מופע ב-9.11 ולקנות 2 כרטיסים.",
+     "tags": [
+      "reserve"
+     ]
+    },
+    {
+     "id": "d1-b4",
+     "time": "10:15",
+     "title": "📲 הזמנות: Mlejnice (שלישי 12:15)",
+     "placeId": "mlejnice",
+     "note": "שולחן ל-2 ב-12:15 — גולש בלחם.",
+     "tags": [
+      "reserve"
+     ]
+    },
+    {
+     "id": "d1-b5",
+     "time": "10:20",
+     "title": "📲 הזמנות: Alma (שלישי 19:45)",
+     "placeId": "alma",
+     "note": "שולחן ל-2 ב-19:45 — המקום הכי מבוקש בתכנית.",
+     "tags": [
+      "reserve"
+     ]
+    },
+    {
+     "id": "d1-b6",
+     "time": "10:25",
+     "title": "📲 הזמנות: The Alchemist (שלישי 21:45)",
+     "placeId": "alchemist",
+     "note": "שולחן ל-2 ב-21:45.",
+     "tags": [
+      "reserve"
+     ]
+    },
+    {
+     "id": "d1-b7",
+     "time": "10:30",
+     "title": "📲 הזמנות: U Pinkasů (רביעי 12:00)",
+     "placeId": "u-pinkasu",
+     "note": "ארוחת אווז של מרטין — שולחן ל-2 ב-12:00, 11.11 עמוס.",
+     "tags": [
+      "reserve"
+     ]
+    },
+    {
+     "id": "d1-1",
+     "time": "14:55",
+     "title": "להגיע לנתב״ג (טרמינל 3)",
+     "note": "3 שעות לפני ההמראה. לבדוק סטטוס טיסה באפליקציית אל על.",
+     "tags": []
+    },
+    {
+     "id": "d1-2",
+     "time": "17:55",
+     "title": "המראה — LY2523",
+     "note": "אל על לפראג, ~4 שעות טיסה (שעון פראג = ישראל פחות שעה).",
+     "tags": []
+    },
+    {
+     "id": "d1-3",
+     "time": "20:55",
+     "title": "נחיתה ב-PRG, טרמינל 1",
+     "note": "Bolt/Uber למלון (~35 דק׳, €15–22). אוטובוס AE פועל עד ~21:30 — כנראה לא יספיק. לא לקחת נהגים שפונים באולם.",
+     "tags": [],
+     "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Leti%C5%A1t%C4%9B+V%C3%A1clava+Havla+Praha+Terminal+1",
+     "address": "Aviatická, 161 00 Praha 6"
+    },
+    {
+     "id": "d1-4",
+     "time": "21:45",
+     "title": "צ׳ק-אין בגרנד מארק",
+     "placeId": "hotel",
+     "note": "לבקש מפת אזור ולשאול על שעות הבר ועל אחסון מזוודות ביום רביעי.",
+     "tags": []
+    },
+    {
+     "id": "d1-5",
+     "time": "22:15",
+     "title": "ביס/דרינק קליל",
+     "placeId": "two-steps",
+     "note": "עייפים? בר המלון. רעבים? Kungfu Ramen ב-Havelská פתוח עד 23:00 (12 דק׳ הליכה, ובדרך ל-Friends) — להגיע עד ~22:30.",
+     "tags": [
+      "rain"
+     ]
+    },
+    {
+     "id": "d1-6",
+     "time": "23:00",
+     "title": "בר גאה ראשון: Friends",
+     "placeId": "friends",
+     "note": "10 דק׳ הליכה דרך העיר העתיקה, פתוח כל לילה עד הבוקר. לא להגזים — מחר יוצאים ב-7:40.",
+     "tags": [
+      "gay",
+      "late"
+     ]
+    }
+   ]
+  },
+  {
+   "date": "2026-11-09",
+   "title": "המצודה, מאלה סטראנה וקנטינה",
+   "summary": "גשר קרל לפני ההמונים, מצודה בפתיחה, שקיעה בפטרשין, סטייק בקנטינה ולילה בווינוהרדי",
+   "items": [
+    {
+     "id": "d2-1",
+     "time": "07:00",
+     "title": "ארוחת בוקר במלון",
+     "placeId": "hotel",
+     "note": "לצאת עד 7:40. מעיל עמיד למים ונעליים עם אחיזה — אבני מרצפת רטובות.",
+     "tags": []
+    },
+    {
+     "id": "d2-2",
+     "time": "07:50",
+     "title": "גשר קרל ריק",
+     "endTime": "08:20",
+     "placeId": "charles-bridge",
+     "note": "~15 דק׳ הליכה מהמלון. התמונות הכי טובות לפני 8:00.",
+     "tags": [
+      "free",
+      "view",
+      "mustSee"
+     ]
+    },
+    {
+     "id": "d2-3",
+     "time": "08:20",
+     "title": "עלייה דרך מאלה סטראנה",
+     "note": "ברחוב Nerudova במעלה הגבעה (~25 דק׳) או חשמלית 22 לתחנת Pražský hrad אם יורד גשם.",
+     "tags": [],
+     "address": "Nerudova, 118 00 Praha 1"
+    },
+    {
+     "id": "d2-4",
+     "time": "09:00",
+     "title": "מצודת פראג וקתדרלת ויטוס",
+     "endTime": "12:00",
+     "placeId": "castle",
+     "note": "כרטיס מסלול ראשי 450 Kč — לקנות אונליין ערב לפני. להתחיל בקתדרלה לפני התורים.",
+     "tags": [
+      "mustSee",
+      "bookAhead",
+      "rain"
+     ]
+    },
+    {
+     "id": "d2-5",
+     "time": "12:15",
+     "title": "צהריים ב-Kuchyň",
+     "placeId": "kuchyn",
+     "note": "ליד שער המצודה, עם נוף. לשמור מקום לסטייק בערב — מנה אחת קלה.",
+     "tags": [
+      "view",
+      "reserve"
+     ]
+    },
+    {
+     "id": "d2-6",
+     "time": "13:30",
+     "title": "מנזר סטרהוב: ספרייה ותצפית",
+     "placeId": "strahov",
+     "note": "190 Kč. התצפית בחינם; בירה של המבשלה אם בא.",
+     "tags": [
+      "view",
+      "rain"
+     ]
+    },
+    {
+     "id": "d2-7",
+     "time": "15:00",
+     "title": "פטרשין — תצפית לפני השקיעה",
+     "endTime": "16:15",
+     "placeId": "petrin",
+     "note": "הליכה במישור מסטרהוב (~15 דק׳). שקיעה ~16:30. הרכבל סגור — יורדים ברגל לאויזד.",
+     "tags": [
+      "view"
+     ]
+    },
+    {
+     "id": "d2-8",
+     "time": "16:30",
+     "title": "חזרה למלון",
+     "placeId": "hotel",
+     "note": "חשמלית 22 מ-Újezd לכיוון Národní třída ומשם הליכה, או Bolt (~10 דק׳). מנוחה קצרה.",
+     "tags": []
+    },
+    {
+     "id": "d2-9",
+     "time": "17:45",
+     "title": "ארוחת ערב בקנטינה ⭐",
+     "placeId": "kantyna",
+     "note": "בלי הזמנה — להגיע לפני 18:00 כדי לעקוף את התור. סטייק לפי משקל + קרפצ׳יו וחמוצים. אם יש תור ארוך: גיבוי מחר ב-11:30.",
+     "tags": [
+      "mustSee",
+      "walkin",
+      "queue"
+     ]
+    },
+    {
+     "id": "d2-10",
+     "time": "20:00",
+     "endTime": "21:30",
+     "title": "תיאטרון האור השחור — Image",
+     "placeId": "image-theatre",
+     "note": "במקום ההקרנה. 15 דק׳ הליכה מקנטינה (לצאת עד 19:40). מופע בלי מילים, 85–90 דק׳. ⚠️ לוודא שיש מופע ב-9.11 לפני הקנייה.",
+     "tags": [
+      "bookAhead",
+      "rain"
+     ]
+    },
+    {
+     "id": "d2-11",
+     "time": "21:50",
+     "title": "The Saints — פתיחת ערב",
+     "placeId": "saints",
+     "note": "Bolt מפריז׳סקה לווינוהרדי ~10 דק׳. Bolt ~8 דק׳ לווינוהרדי (או מטרו A ל-Náměstí Míru). בר קטן ונעים לדרינק ראשון.",
+     "tags": [
+      "gay"
+     ]
+    },
+    {
+     "id": "d2-12",
+     "time": "23:00",
+     "title": "UP&DOWN — לרקוד",
+     "placeId": "up-down",
+     "note": "מועדון בקומה התחתונה. חלופה שקטה יותר ליד הסיינטס: Klub 21 (Římská 21, 25+). Bolt חזרה.",
+     "tags": [
+      "gay",
+      "late"
+     ]
+    }
+   ]
+  },
+  {
+   "date": "2026-11-10",
+   "title": "הרובע היהודי, העיר העתיקה ולטנה",
+   "summary": "בוקר ביוזפוב, צהריים צ׳כי, שקיעה בלטנה, קניות וערב סביב Národní",
+   "items": [
+    {
+     "id": "d3-1",
+     "time": "08:00",
+     "title": "ארוחת בוקר במלון",
+     "placeId": "hotel",
+     "note": "אם קנטינה לא הסתדרה אתמול — היום ב-11:30 במקום הצהריים.",
+     "tags": []
+    },
+    {
+     "id": "d3-2",
+     "time": "09:00",
+     "title": "הרובע היהודי והמוזיאון",
+     "endTime": "11:30",
+     "placeId": "jewish-museum",
+     "note": "~15 דק׳ הליכה. כרטיס 600 Kč לכל האתרים; להתחיל באלטנוי שול לפני הקבוצות.",
+     "tags": [
+      "mustSee",
+      "rain"
+     ]
+    },
+    {
+     "id": "d3-3",
+     "time": "11:30",
+     "title": "הליכה בפריז׳סקה",
+     "placeId": "parizska",
+     "note": "שדרת המותגים בדרך לכיכר — חלונות ראווה.",
+     "tags": []
+    },
+    {
+     "id": "d3-4",
+     "time": "11:55",
+     "title": "כיכר העיר העתיקה + השעון",
+     "placeId": "old-town",
+     "note": "מופע השעון ב-12:00. להיזהר מכיסים בצפיפות. לא לקנות נוגט ברחוב Celetná (אזהרת בוטוליזם 2026).",
+     "tags": [
+      "mustSee",
+      "free"
+     ]
+    },
+    {
+     "id": "d3-5",
+     "time": "12:15",
+     "title": "צהריים: גולש בתוך לחם ב-Mlejnice ⭐",
+     "placeId": "mlejnice",
+     "note": "2 דק׳ הליכה מהשעון (סמטת Kožná). להזמין: Goulash in bread + בירה כהה. מלא? חלופה: Lokál Dlouhááá (10 דק׳).",
+     "tags": [
+      "mustSee",
+      "reserve"
+     ]
+    },
+    {
+     "id": "d3-6",
+     "time": "14:15",
+     "title": "קפה בלטנה",
+     "placeId": "pod-lipami",
+     "note": "חוצים את גשר Čechův most ועולים במדרגות (~20 דק׳), או חשמלית. שוקו חם; חלופה: Chez Vien.",
+     "tags": [
+      "rain"
+     ]
+    },
+    {
+     "id": "d3-7",
+     "time": "15:45",
+     "title": "שקיעה במטרונום של לטנה",
+     "endTime": "16:30",
+     "placeId": "letna",
+     "note": "הנוף הקלאסי על הגשרים והעיר העתיקה.",
+     "tags": [
+      "free",
+      "view"
+     ]
+    },
+    {
+     "id": "d3-8",
+     "time": "17:00",
+     "title": "מגדל העירייה בבין ערביים",
+     "placeId": "old-town",
+     "note": "חוזרים ברגל/חשמלית לכיכר. הכיכר המוארת מלמעלה. ⚠️ מחיר ושיפוצים לבדוק בקופה.",
+     "tags": [
+      "view",
+      "queue"
+     ]
+    },
+    {
+     "id": "d3-9",
+     "time": "18:00",
+     "title": "קניות: Na Příkopě ופלאדיום",
+     "placeId": "na-prikope",
+     "note": "רשתות פתוחות עד 20:00, פלאדיום (ליד המלון) עד ~22:00. לחפש מבצעי בלאק פריידיי מוקדמים. להשאיר שקיות במלון.",
+     "tags": [
+      "rain"
+     ]
+    },
+    {
+     "id": "d3-10",
+     "time": "19:45",
+     "title": "ארוחת ערב ב-Alma",
+     "placeId": "alma",
+     "note": "להזמין מקום מראש! מנות לחלוק מהאש ובר יין טבעי בחצר (פתוח ג׳ עד 01:00).",
+     "tags": [
+      "reserve"
+     ]
+    },
+    {
+     "id": "d3-11",
+     "time": "21:45",
+     "title": "The Alchemist Bar — קוקטיילים",
+     "placeId": "alchemist",
+     "note": "במקום Q Café. 10 דק׳ הליכה מ-Alma. להזמין שולחן; לנסות את משחק 'Choose Your Fate'. משם 10 דק׳ ל-Friends.",
+     "tags": [
+      "reserve",
+      "late"
+     ]
+    },
+    {
+     "id": "d3-12",
+     "time": "23:00",
+     "title": "Friends — לילה אחרון בעיר",
+     "placeId": "friends",
+     "note": "10 דק׳ הליכה מהאלכימיסט. ⚠️ לפי תוכנית ישנה שלישי = קריוקי. 10 דק׳ הליכה חזרה למלון.",
+     "tags": [
+      "gay",
+      "late"
+     ]
+    }
+   ]
+  },
+  {
+   "date": "2026-11-11",
+   "title": "יום מרטין הקדוש וחזרה",
+   "summary": "שוק ז׳יראק, יין צעיר ב-11:11, ארוחת אווז, וישהראד בשקיעה וטיסה",
+   "items": [
+    {
+     "id": "d4-1",
+     "time": "08:00",
+     "title": "ארוחת בוקר, אריזה וצ׳ק-אאוט",
+     "placeId": "hotel",
+     "note": "צ׳ק-אאוט עד 11:00 — עדיף לעשות כבר עכשיו ולהשאיר מזוודות בשמירה בקבלה.",
+     "tags": []
+    },
+    {
+     "id": "d4-2",
+     "time": "09:15",
+     "title": "שוק האיכרים ז׳יראק",
+     "endTime": "10:15",
+     "placeId": "jirak",
+     "note": "מטרו B מ-Náměstí Republiky → Muzeum → מטרו A ל-Jiřího z Poděbrad (~15 דק׳). ⚠️ לוח נובמבר לא מאומת.",
+     "tags": [
+      "free"
+     ]
+    },
+    {
+     "id": "d4-2b",
+     "time": "10:10",
+     "title": "Cinnamood — קפה ורול קינמון",
+     "placeId": "cinnamood",
+     "note": "באותה כיכר של השוק, עם מקומות ישיבה. להזמין Macadamia Roll. ⚠️ לבדוק שעות פתיחה במפות; אם סגור — הסניף ב-Jungmannova ליד U Pinkasů בצהריים.",
+     "tags": [
+      "walkin"
+     ]
+    },
+    {
+     "id": "d4-3",
+     "time": "10:45",
+     "title": "תצפית בפארק ריגרובי",
+     "placeId": "riegrovy",
+     "note": "10 דק׳ הליכה מהכיכר. נוף לכל העיר והמצודה.",
+     "tags": [
+      "free",
+      "view"
+     ]
+    },
+    {
+     "id": "d4-4",
+     "time": "11:11",
+     "title": "יין מרטין צעיר — לחיים!",
+     "placeId": "u-pinkasu",
+     "note": "ב-11:11 פותחים את היין הצעיר (Svatomartinské víno). מטרו A ל-Můstek ו-5 דק׳ הליכה; כוס יין לפני ארוחת האווז.",
+     "tags": [
+      "mustSee"
+     ]
+    },
+    {
+     "id": "d4-5",
+     "time": "12:00",
+     "title": "ארוחת אווז של מרטין",
+     "placeId": "u-pinkasu",
+     "note": "אווז צלוי עם כרוב אדום וכופתאות. להזמין מקום מראש! גיבוי: Obecní dům ליד המלון.",
+     "tags": [
+      "bookAhead",
+      "rain"
+     ]
+    },
+    {
+     "id": "d4-6",
+     "time": "13:45",
+     "title": "פסאז׳ לוצרנה והסוס ההפוך",
+     "placeId": "lucerna",
+     "note": "5 דק׳ הליכה. הסוס של דוד צ׳רני.",
+     "tags": [
+      "free",
+      "rain"
+     ]
+    },
+    {
+     "id": "d4-7",
+     "time": "14:15",
+     "title": "סבב קניות אחרון",
+     "placeId": "na-prikope",
+     "note": "כיכר ואצלב → Na Příkopě → פלאדיום. לשים לב למשקל המזוודות.",
+     "tags": [
+      "rain"
+     ]
+    },
+    {
+     "id": "d4-8",
+     "time": "15:30",
+     "title": "וישהראד בשקיעה",
+     "endTime": "16:45",
+     "placeId": "vysehrad",
+     "note": "מטרו C מ-Hlavní nádraží ל-Vyšehrad (~10 דק׳). אם יורד גשם חזק — לוותר ולשבת בבית הקפה של Obecní dům.",
+     "tags": [
+      "free",
+      "view"
+     ]
+    },
+    {
+     "id": "d4-9",
+     "time": "17:30",
+     "title": "ראמן לפני הטיסה — Kungfu Ramen",
+     "placeId": "kungfu-ramen",
+     "note": "ארוחה חמה ומהירה לפני השדה. 12 דק׳ הליכה חזרה למלון — לסיים עד 18:30. בלי הזמנה.",
+     "tags": [
+      "walkin",
+      "rain"
+     ]
+    },
+    {
+     "id": "d4-10",
+     "time": "18:45",
+     "title": "איסוף מזוודות ויציאה לשדה",
+     "placeId": "hotel",
+     "note": "לצאת עד 19:00 לכל המאוחר. Bolt/Uber ~35 דק׳ (€15–22).",
+     "tags": []
+    },
+    {
+     "id": "d4-11",
+     "time": "21:00",
+     "title": "רק אם הטיסה מאוחרת: מסיבת הסיום של מזיפטרה",
+     "placeId": "mezipatra-party",
+     "note": "לוצרנה קפה, חינם. אחר כך אפשר TERmix (פתוח רק ברביעי). לא רלוונטי אם ממריאים ב-22:00.",
+     "tags": [
+      "gay",
+      "free",
+      "רק אם הטיסה מאוחרת"
+     ]
+    },
+    {
+     "id": "d4-12",
+     "time": "22:00",
+     "title": "המראה — LY2524 (לאשר שעה!)",
+     "note": "שעת הטיסה משוערת — לאשר מול אל על. להיות בשדה שעתיים לפני (צ׳ק-אין אל על נסגר מוקדם).",
+     "tags": [
+      "לאשר שעה"
+     ],
+     "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Leti%C5%A1t%C4%9B+V%C3%A1clava+Havla+Praha+Terminal+1",
+     "address": "Aviatická, 161 00 Praha 6"
+    }
+   ]
+  }
+ ],
+ "places": [
+  {
+   "id": "kantyna",
+   "name": "Kantýna",
+   "nameHe": "קנטינה — היכל הבשר",
+   "category": "food",
+   "subcategory": "בשרים",
+   "area": "Nové Město",
+   "address": "Politických vězňů 1511/5, 110 00 Praha 1",
+   "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Kant%C3%BDna%2C+Politick%C3%BDch+v%C4%9Bz%C5%88%C5%AF+1511%2F5%2C+110+00+Praha+1",
+   "hours": "ב׳–שבת 11:30–23:00 · א׳ 11:30–22:00 (הזמנה אחרונה ~שעה לפני סגירה)",
+   "price": "~1,000–1,500 Kč לאדם עם סטייק",
+   "why": "אטליז-מסעדה בארמון בנק לשעבר: מקבלים כרטיס בכניסה, מזמינים סטייק לפי משקל בדלפק הקצבים, בירה בבר ומשלמים ביציאה. להזמין קרפצ׳יו וחמוצים. 5–10 דק׳ הליכה מהמלון.",
+   "tags": [
+    "mustSee",
+    "walkin",
+    "queue"
+   ],
+   "sourceUrls": [
+    "https://www.prague.eu/en/object/food/2927/kantyna",
+    "https://www.trvlogue.com/en/prague-kantyna-review",
+    "https://www.expats.cz/czech-news/article/take-a-look-inside-pragues-new-temple-for-meat-lovers"
+   ],
+   "phone": "+420 605 593 328"
+  },
+  {
+   "id": "nase-maso",
+   "name": "Naše maso",
+   "nameHe": "נאשה מאסו",
+   "category": "food",
+   "subcategory": "בשרים",
+   "area": "Staré Město",
+   "address": "Dlouhá 39, 110 00 Praha 1",
+   "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Na%C5%A1e+maso%2C+Dlouh%C3%A1+39%2C+110+00+Praha+1",
+   "hours": "⚠️ שעות לאמת (בדרך כלל צהריים–ערב, ימי חול)",
+   "price": "$–$$",
+   "why": "אטליז עם דלפק עמידה — המבורגר וקציץ בשר מעולים, מאותו חוג בעלים של קנטינה. מהיר, טוב כביס בין אטרקציות.",
+   "tags": [
+    "walkin",
+    "queue"
+   ],
+   "sourceUrls": [
+    "https://discoveringprague.com/ar/best-restaurants-in-prague/",
+    "https://timeout.co.il/%D7%9E%D7%A1%D7%A2%D7%93%D7%95%D7%AA-%D7%A4%D7%A8%D7%90%D7%92/"
+   ],
+   "phone": ""
+  },
+  {
+   "id": "lokal-dlouha",
+   "name": "Lokál Dlouhááá",
+   "nameHe": "לוקאל דלוהה",
+   "category": "food",
+   "subcategory": "צ׳כי",
+   "area": "Staré Město",
+   "address": "Dlouhá 33, 110 00 Praha 1",
+   "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Lok%C3%A1l+Dlouh%C3%A1%C3%A1%C3%A1%2C+Dlouh%C3%A1+33%2C+110+00+Praha+1",
+   "hours": "⚠️ שעות לאמת (פתוח עד מאוחר)",
+   "price": "$$",
+   "why": "פאב צ׳כי קלאסי באולם ארוך: פילזנר מהטנק, סוויצ׳קובה ושניצל כמו בספר. בדרך כלל אפשר להיכנס בלי הזמנה, אבל צפוף.",
+   "tags": [
+    "walkin",
+    "rain"
+   ],
+   "sourceUrls": [
+    "https://discoveringprague.com/ar/best-restaurants-in-prague/"
+   ],
+   "phone": ""
+  },
+  {
+   "id": "alma",
+   "name": "Alma",
+   "nameHe": "אלמה",
+   "category": "food",
+   "subcategory": "טרנדי",
+   "area": "Nové Město",
+   "address": "V Jirchářích 8, 110 00 Praha 1",
+   "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Alma%2C+V+Jirch%C3%A1%C5%99%C3%ADch+8%2C+110+00+Praha+1",
+   "hours": "מסעדה ב׳–שבת 11:30–15:00, 17:30–23:00 · בר יין ג׳–שבת עד 01:00 · קפה 9–18",
+   "price": "$$$",
+   "why": "מתחם חדש ואופנתי של צוות Kro: מטבח פתוח ומנות לחלוק מאש פתוחה, בר קוקטיילים ובר יין טבעי בחצר. 3 דק׳ מ-Q Café ו-Friends.",
+   "tags": [
+    "reserve",
+    "rain"
+   ],
+   "sourceUrls": [
+    "https://prague.eu/en/objevujte/487938",
+    "https://discoveringprague.com/ar/best-restaurants-in-prague/"
+   ],
+   "phone": "+420 601 150 800",
+   "bookingUrl": "https://almaprague.cz/en",
+   "bookingLabel": "הזמנת שולחן"
+  },
+  {
+   "id": "eska",
+   "name": "Eska",
+   "nameHe": "אסקה",
+   "category": "food",
+   "subcategory": "טרנדי",
+   "area": "Karlín",
+   "address": "Pernerova 49, 186 00 Praha 8 (Forum Karlín)",
+   "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Eska%2C+Pernerova+49%2C+186+00+Praha+8+%28Forum+Karl%C3%ADn%29",
+   "hours": "⚠️ שעות לאמת",
+   "price": "$$",
+   "why": "מאפיית מחמצת ומטבח צ׳כי מודרני בחלל תעשייתי. בראנץ׳ חזק; מופיעה כמעט בכל רשימה של 2025–26.",
+   "tags": [
+    "reserve"
+   ],
+   "sourceUrls": [
+    "https://www.expats.cz/czech-news/article/where-to-eat-karlin-prague-neighborhoods-ambiente",
+    "https://discoveringprague.com/ar/best-restaurants-in-prague/"
+   ],
+   "phone": ""
+  },
+  {
+   "id": "kuchyn",
+   "name": "Kuchyň",
+   "nameHe": "קוכין",
+   "category": "food",
+   "subcategory": "צ׳כי",
+   "area": "Hradčany",
+   "address": "Hradčanské náměstí 1, 118 00 Praha 1",
+   "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Kuchy%C5%88%2C+Hrad%C4%8Dansk%C3%A9+n%C3%A1m%C4%9Bst%C3%AD+1%2C+118+00+Praha+1",
+   "hours": "⚠️ שעות לאמת",
+   "price": "$$–$$$",
+   "why": "מסעדה צ׳כית צמודה לשער המצודה עם מרפסת נוף. בוחרים מנות ישר מהסירים במטבח.",
+   "tags": [
+    "reserve",
+    "view"
+   ],
+   "sourceUrls": [
+    "https://discoveringprague.com/ar/best-restaurants-in-prague/"
+   ],
+   "phone": "+420 736 152 891",
+   "bookingUrl": "https://kuchyn.ambi.cz",
+   "bookingLabel": "הזמנת שולחן"
+  },
+  {
+   "id": "cafe-savoy",
+   "name": "Café Savoy",
+   "nameHe": "קפה סבוי",
+   "category": "food",
+   "subcategory": "קפה",
+   "area": "Malá Strana",
+   "address": "Vítězná 124/5, 150 00 Praha 5",
+   "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Caf%C3%A9+Savoy%2C+V%C3%ADt%C4%9Bzn%C3%A1+124%2F5%2C+150+00+Praha+5",
+   "hours": "⚠️ שעות לאמת",
+   "price": "$$–$$$",
+   "why": "בית קפה מפואר עם תקרה ניאו-רנסנסית, כוכב טיקטוק. בראנץ׳ או קפה ועוגה אחרי פטרשין.",
+   "tags": [
+    "bookAhead",
+    "rain"
+   ],
+   "sourceUrls": [
+    "https://discoveringprague.com/ar/best-restaurants-in-prague/",
+    "https://www.tiktok.com/discover/cafe-savoy"
+   ],
+   "phone": ""
+  },
+  {
+   "id": "u-pinkasu",
+   "name": "U Pinkasů",
+   "nameHe": "או פינקאסו — אווז",
+   "category": "food",
+   "subcategory": "אווז מרטין",
+   "area": "Nové Město",
+   "address": "Jungmannovo náměstí 16, 110 00 Praha 1",
+   "mapsUrl": "https://www.google.com/maps/search/?api=1&query=U+Pinkas%C5%AF%2C+Jungmannovo+n%C3%A1m%C4%9Bst%C3%AD+16%2C+110+00+Praha+1",
+   "hours": "⚠️ שעות לאמת",
+   "price": "$$",
+   "why": "פאב פילזנר היסטורי. תפריט אווז מ-6.11 ויין צעיר של מרטין מ-11.11 — מועמד ראשון לארוחת האווז ביום רביעי.",
+   "tags": [
+    "bookAhead",
+    "rain"
+   ],
+   "sourceUrls": [
+    "https://www.visitczechia.com/en-us/news/2026/10/n-tradition-of-st-martin",
+    "https://www.expats.cz/czech-news/article/where-to-eat-and-drink-in-prague-now-november-s-tastiest-openings-and-events"
+   ],
+   "phone": "+420 221 111 152",
+   "bookingUrl": "http://www.upinkasu.cz",
+   "bookingLabel": "הזמנת שולחן"
+  },
+  {
+   "id": "obecni-dum",
+   "name": "Obecní dům (Plzeňská restaurace / Kavárna)",
+   "nameHe": "הבית העירוני — אווז",
+   "category": "food",
+   "subcategory": "אווז מרטין",
+   "area": "Nové Město",
+   "address": "náměstí Republiky 5, 110 00 Praha 1",
+   "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Obecn%C3%AD+d%C5%AFm+%28Plze%C5%88sk%C3%A1+restaurace+%2F+Kav%C3%A1rna%29%2C+n%C3%A1m%C4%9Bst%C3%AD+Republiky+5%2C+110+00+Praha+1",
+   "hours": "⚠️ שעות לאמת",
+   "price": "$$–$$$",
+   "why": "בניין האר-נובו הצמוד למלון. תפריט אווז 7–11.11 (במסבאה מ-9.11). גיבוי לאווז, או קפה בבית הקפה המפואר.",
+   "tags": [
+    "rain"
+   ],
+   "sourceUrls": [
+    "https://www.visitczechia.com/en-us/news/2026/10/n-tradition-of-st-martin",
+    "https://www.expats.cz/czech-news/article/where-to-eat-and-drink-in-prague-now-november-s-tastiest-openings-and-events"
+   ],
+   "phone": ""
+  },
+  {
+   "id": "pod-lipami",
+   "name": "Kavárna pod Lipami",
+   "nameHe": "קפה פוד ליפאמי",
+   "category": "food",
+   "subcategory": "קפה",
+   "area": "Letná",
+   "address": "",
+   "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Kav%C3%A1rna+pod+Lipami%2C+Letn%C3%A1%2C+Praha",
+   "hours": "⚠️ שעות לאמת",
+   "price": "$",
+   "why": "בית קפה שכונתי בלטנה, מפורסם בשוקו חם סמיך. גם Chez Vien (יין טבעי ומאצ׳ה) ו-Dos Mundos באזור.",
+   "tags": [
+    "rain"
+   ],
+   "sourceUrls": [
+    "https://loudavymkrokem.cz/de/beste-cafes-prag/"
+   ],
+   "phone": ""
+  },
+  {
+   "id": "blumery",
+   "name": "Blumery Café",
+   "nameHe": "בלומרי קפה",
+   "category": "food",
+   "subcategory": "קפה",
+   "area": "Vinohrady (Jiřák)",
+   "address": "",
+   "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Blumery+Caf%C3%A9%2C+Ji%C5%99%C3%ADho+z+Pod%C4%9Bbrad%2C+Praha",
+   "hours": "⚠️ שעות לאמת",
+   "price": "$",
+   "why": "בית קפה אינסטגרמי בסניף דואר לשעבר ליד כיכר ז׳יראק — קפה אחרי שוק האיכרים.",
+   "tags": [
+    "rain"
+   ],
+   "sourceUrls": [
+    "https://loudavymkrokem.cz/de/beste-cafes-prag/"
+   ],
+   "phone": ""
+  },
+  {
+   "id": "manifesto",
+   "name": "Manifesto Market Anděl",
+   "nameHe": "מניפסטו אנדל",
+   "category": "food",
+   "subcategory": "טרנדי",
+   "area": "Smíchov",
+   "address": "Ostrovského 34, 150 00 Praha 5",
+   "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Manifesto+Market+And%C4%9Bl%2C+Ostrovsk%C3%A9ho+34%2C+150+00+Praha+5",
+   "hours": "⚠️ שעות לאמת",
+   "price": "$–$$",
+   "why": "שוק אוכל מקורה ומחומם עם ~14 מטבחים ובר קוקטיילים, קהל צעיר. ללא מזומן. משתלב עם קניון Nový Smíchov.",
+   "tags": [
+    "walkin",
+    "rain"
+   ],
+   "sourceUrls": [
+    "https://prague.eu/en/objevujte/manifesto-market-andel/"
+   ],
+   "phone": ""
+  },
+  {
+   "id": "u-kroka",
+   "name": "U Kroka",
+   "nameHe": "או קרוקה",
+   "category": "food",
+   "subcategory": "צ׳כי",
+   "area": "Vyšehrad",
+   "address": "Vratislavova 12, 128 00 Praha 2",
+   "mapsUrl": "https://www.google.com/maps/search/?api=1&query=U+Kroka%2C+Vratislavova+12%2C+128+00+Praha+2",
+   "hours": "⚠️ שעות לאמת",
+   "price": "$$",
+   "why": "מסעדה משפחתית עם מנות ענק, ליד וישהראד. מתאים אם עושים את וישהראד בשקיעה ונשארים לארוחה.",
+   "tags": [
+    "reserve"
+   ],
+   "sourceUrls": [
+    "https://discoveringprague.com/ar/best-restaurants-in-prague/",
+    "https://airial.travel/restaurants/czech-republic/prague/u-kroka-sdasuZlQ"
+   ],
+   "phone": ""
+  },
+  {
+   "id": "king-solomon",
+   "name": "King Solomon",
+   "nameHe": "קינג סולומון (כשר)",
+   "category": "food",
+   "subcategory": "כשר",
+   "area": "Josefov",
+   "address": "Široká 8, 110 00 Praha 1",
+   "mapsUrl": "https://www.google.com/maps/search/?api=1&query=King+Solomon%2C+%C5%A0irok%C3%A1+8%2C+110+00+Praha+1",
+   "hours": "⚠️ שעות לאמת",
+   "price": "~500–900 Kč לאדם",
+   "why": "גלאט כשר בהשגחת רבנות פראג, ברובע היהודי. אופציה אם רוצים כשר אחרי המוזיאון.",
+   "tags": [
+    "kosher"
+   ],
+   "sourceUrls": [
+    "https://bestpragueguide.com/en/blog/prague-kosher-restaurants"
+   ],
+   "phone": ""
+  },
+  {
+   "id": "castle",
+   "name": "Pražský hrad + Katedrála sv. Víta",
+   "nameHe": "מצודת פראג וקתדרלת ויטוס",
+   "category": "sights",
+   "subcategory": "היסטוריה",
+   "area": "Hradčany",
+   "address": "Hradčany, 119 08 Praha 1",
+   "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Pra%C5%BEsk%C3%BD+hrad+%2B+Katedr%C3%A1la+sv.+V%C3%ADta%2C+Hrad%C4%8Dany%2C+119+08+Praha+1",
+   "hours": "מבנים 9:00–16:00 · שטח 6:00–22:00",
+   "price": "מסלול ראשי 450 Kč (תקף יומיים) · מגדל דרומי +200",
+   "why": "הקתדרלה, הארמון הישן וסמטת הזהב. להגיע בפתיחה ב-9:00 לפני הקבוצות; 2.5–3.5 שעות.",
+   "tags": [
+    "mustSee",
+    "bookAhead",
+    "view",
+    "queue"
+   ],
+   "sourceUrls": [
+    "https://www.trvlogue.com/en/prague-castle-tickets-guide"
+   ],
+   "phone": "",
+   "bookingUrl": "https://www.hrad.cz/en/prague-castle-for-visitors/tickets",
+   "bookingLabel": "כרטיסים"
+  },
+  {
+   "id": "charles-bridge",
+   "name": "Karlův most",
+   "nameHe": "גשר קרל",
+   "category": "sights",
+   "subcategory": "היסטוריה",
+   "area": "Staré Město / Malá Strana",
+   "address": "Karlův most, 110 00 Praha 1",
+   "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Karl%C5%AFv+most%2C+Karl%C5%AFv+most%2C+110+00+Praha+1",
+   "hours": "24/7",
+   "price": "חינם · מגדל הגשר ~150 Kč ⚠️",
+   "why": "הכי יפה לפני 8:00 או אחרי החשכה, בלי הצפיפות. 30 דק׳.",
+   "tags": [
+    "mustSee",
+    "free",
+    "view"
+   ],
+   "sourceUrls": [
+    "https://bestpragueguide.com/en/blog/prague-viewpoints-best-views"
+   ],
+   "phone": ""
+  },
+  {
+   "id": "strahov",
+   "name": "Strahovský klášter",
+   "nameHe": "מנזר סטרהוב והספרייה",
+   "category": "sights",
+   "subcategory": "היסטוריה",
+   "area": "Hradčany",
+   "address": "Strahovské nádvoří 1, 118 00 Praha 1",
+   "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Strahovsk%C3%BD+kl%C3%A1%C5%A1ter%2C+Strahovsk%C3%A9+n%C3%A1dvo%C5%99%C3%AD+1%2C+118+00+Praha+1",
+   "hours": "יומי 9:00–17:00",
+   "price": "190 Kč (ספרייה) · התצפית והמבשלה חינם",
+   "why": "אולמות ספרייה מרהיבים (צופים מהפתח), תצפית חינם על העיר ומבשלת בירה של המנזר. 10 דק׳ הליכה מהמצודה.",
+   "tags": [
+    "view",
+    "rain"
+   ],
+   "sourceUrls": [
+    "https://www.strahovskyklaster.cz/en/for-visitors"
+   ],
+   "phone": ""
+  },
+  {
+   "id": "petrin",
+   "name": "Petřínská rozhledna",
+   "nameHe": "מגדל התצפית פטרשין",
+   "category": "sights",
+   "subcategory": "תצפית",
+   "area": "Malá Strana",
+   "address": "Petřínské sady, 118 00 Praha 1",
+   "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Pet%C5%99%C3%ADnsk%C3%A1+rozhledna%2C+Pet%C5%99%C3%ADnsk%C3%A9+sady%2C+118+00+Praha+1",
+   "hours": "10:00–18:00",
+   "price": "250 Kč · מעלית +150",
+   "why": "\"אייפל הקטן\" של פראג. הרכבל סגור — הולכים מסטרהוב במישור (~15 דק׳) ויורדים ברגל לאויזד.",
+   "tags": [
+    "view"
+   ],
+   "sourceUrls": [
+    "https://prague.eu/en/objevujte/petrin-tower-petrinska-rozhledna"
+   ],
+   "phone": ""
+  },
+  {
+   "id": "old-town",
+   "name": "Staroměstské náměstí + Orloj + Staroměstská radnice",
+   "nameHe": "כיכר העיר העתיקה, השעון האסטרונומי ומגדל העירייה",
+   "category": "sights",
+   "subcategory": "היסטוריה",
+   "area": "Staré Město",
+   "address": "Staroměstské náměstí 1, 110 00 Praha 1",
+   "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Starom%C4%9Bstsk%C3%A9+n%C3%A1m%C4%9Bst%C3%AD+%2B+Orloj+%2B+Starom%C4%9Bstsk%C3%A1+radnice%2C+Starom%C4%9Bstsk%C3%A9+n%C3%A1m%C4%9Bst%C3%AD+1%2C+110+00+Praha+1",
+   "hours": "מגדל 9:00–20:00",
+   "price": "מגדל ~350 Kč בקופה / ~450 אונליין ⚠️",
+   "why": "מופע השעון בכל שעה עגולה. המגדל הכי יפה בשעת בין ערביים כשהכיכר נדלקת. חלקים עשויים להיות סגורים לשיפוץ ב-2026.",
+   "tags": [
+    "mustSee",
+    "view",
+    "queue"
+   ],
+   "sourceUrls": [
+    "https://www.prague-trip.com/tickets-and-passes/old-town-hall-tickets/"
+   ],
+   "phone": ""
+  },
+  {
+   "id": "jewish-museum",
+   "name": "Židovské muzeum v Praze (Josefov)",
+   "nameHe": "הרובע היהודי והמוזיאון היהודי",
+   "category": "sights",
+   "subcategory": "היסטוריה",
+   "area": "Josefov",
+   "address": "Maiselova 15, 110 00 Praha 1",
+   "mapsUrl": "https://www.google.com/maps/search/?api=1&query=%C5%BDidovsk%C3%A9+muzeum+v+Praze+%28Josefov%29%2C+Maiselova+15%2C+110+00+Praha+1",
+   "hours": "9:00–16:30 (חורף) · אלטנוי שול 9–17 · סגור בשבת",
+   "price": "600 Kč (תקף 3 ימים)",
+   "why": "בתי הכנסת (פינקס, ספרדי, אלטנוי שול) ובית הקברות העתיק. פתוח בכל ימי הטיול. 2–3 שעות בבוקר.",
+   "tags": [
+    "mustSee",
+    "rain"
+   ],
+   "sourceUrls": [
+    "https://www.jewishmuseum.cz/en/info/visit/admission/",
+    "https://www.jewishmuseum.cz/en/info/visit/opening-hours/"
+   ],
+   "phone": ""
+  },
+  {
+   "id": "letna",
+   "name": "Letenské sady (Metronom)",
+   "nameHe": "פארק לטנה והמטרונום",
+   "category": "sights",
+   "subcategory": "תצפית",
+   "area": "Letná",
+   "address": "Letenské sady, 170 00 Praha 7",
+   "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Letensk%C3%A9+sady+%28Metronom%29%2C+Letensk%C3%A9+sady%2C+170+00+Praha+7",
+   "hours": "פתוח תמיד",
+   "price": "חינם",
+   "why": "המרפסת הקלאסית מעל הנהר והגשרים. שעת זהב ~15:45–16:30. גן הבירה כנראה סגור בנובמבר.",
+   "tags": [
+    "free",
+    "view"
+   ],
+   "sourceUrls": [
+    "https://bestpragueguide.com/en/blog/prague-viewpoints-best-views"
+   ],
+   "phone": ""
+  },
+  {
+   "id": "vysehrad",
+   "name": "Vyšehrad",
+   "nameHe": "וישהראד",
+   "category": "sights",
+   "subcategory": "תצפית",
+   "area": "Vyšehrad",
+   "address": "V Pevnosti, 128 00 Praha 2",
+   "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Vy%C5%A1ehrad%2C+V+Pevnosti%2C+128+00+Praha+2",
+   "hours": "שטח פתוח תמיד",
+   "price": "חינם",
+   "why": "מצודה שקטה מעל הנהר עם בית הקברות המפורסם וכנסייה. להגיע ~45 דק׳ לפני השקיעה. מטרו C Vyšehrad.",
+   "tags": [
+    "free",
+    "view"
+   ],
+   "sourceUrls": [
+    "https://bestpragueguide.com/en/blog/prague-viewpoints-best-views"
+   ],
+   "phone": ""
+  },
+  {
+   "id": "riegrovy",
+   "name": "Riegrovy sady",
+   "nameHe": "פארק ריגרובי",
+   "category": "sights",
+   "subcategory": "תצפית",
+   "area": "Vinohrady",
+   "address": "Riegrovy sady, 120 00 Praha 2",
+   "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Riegrovy+sady%2C+Riegrovy+sady%2C+120+00+Praha+2",
+   "hours": "פתוח תמיד",
+   "price": "חינם",
+   "why": "גבעה עם נוף פנורמי למצודה, 10 דק׳ הליכה משוק ז׳יראק ובלב הרובע הגאה של וינוהרדי.",
+   "tags": [
+    "free",
+    "view"
+   ],
+   "sourceUrls": [
+    "https://bestpragueguide.com/en/blog/prague-viewpoints-best-views"
+   ],
+   "phone": ""
+  },
+  {
+   "id": "lucerna",
+   "name": "Pasáž Lucerna (Kůň – David Černý)",
+   "nameHe": "פסאז׳ לוצרנה והסוס ההפוך",
+   "category": "sights",
+   "subcategory": "אמנות",
+   "area": "Nové Město",
+   "address": "Vodičkova 36, 110 00 Praha 1",
+   "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Pas%C3%A1%C5%BE+Lucerna+%28K%C5%AF%C5%88+%E2%80%93+David+%C4%8Cern%C3%BD%29%2C+Vodi%C4%8Dkova+36%2C+110+00+Praha+1",
+   "hours": "כל היום",
+   "price": "חינם",
+   "why": "פסאז׳ אר-נובו עם פסל הסוס ההפוך של דוד צ׳רני. כאן גם קולנוע לוצרנה (מזיפטרה) ולוצרנה קפה. 20 דק׳.",
+   "tags": [
+    "free",
+    "rain"
+   ],
+   "sourceUrls": [
+    "https://mezipatra.cz/en/program/off-program.html"
+   ],
+   "phone": ""
+  },
+  {
+   "id": "saints",
+   "name": "The Saints",
+   "nameHe": "דה סיינטס",
+   "category": "night",
+   "subcategory": "בר",
+   "area": "Vinohrady",
+   "address": "Polská 32, 120 00 Praha 2",
+   "mapsUrl": "https://www.google.com/maps/search/?api=1&query=The+Saints+Bar+Polska+32+Prague",
+   "hours": "יומי עד 02:00 · קוויז ביום א׳",
+   "price": "כניסה חופשית",
+   "why": "בר גאה קטן ונעים בניהול בריטי — פתיחה מושלמת לערב בווינוהרדי. פתוח לפי מדריך 2026.",
+   "tags": [
+    "gay",
+    "late"
+   ],
+   "sourceUrls": [
+    "https://nomadicboys.com/prague-gay-travel-guide/",
+    "https://www.misterbandb.com/gay-guide/czech-republic/prague/50-bars-clubs"
+   ],
+   "phone": ""
+  },
+  {
+   "id": "friends",
+   "name": "Friends Prague",
+   "nameHe": "פרנדס",
+   "category": "night",
+   "subcategory": "בר-מועדון",
+   "area": "Staré Město",
+   "address": "Bartolomějská 11, 110 00 Praha 1",
+   "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Friends+Prague+Bartolomejska+11",
+   "hours": "יומי ~19:00–06:00 · ⚠️ תוכנית ערבים (קריוקי בג׳) מ-2023",
+   "price": "כניסה חופשית ברוב הערבים",
+   "why": "הבר-מועדון הגאה המרכזי ביותר, קהל מעורב, צוות דובר אנגלית. 10 דק׳ הליכה מהמלון — טוב ללילה הראשון.",
+   "tags": [
+    "gay",
+    "late"
+   ],
+   "sourceUrls": [
+    "https://nomadicboys.com/prague-gay-travel-guide/",
+    "https://www.misterbandb.com/gay-guide/czech-republic/prague/50-bars-clubs"
+   ],
+   "phone": ""
+  },
+  {
+   "id": "q-cafe",
+   "name": "Q Café",
+   "nameHe": "קיו קפה",
+   "category": "night",
+   "subcategory": "בר",
+   "area": "Nové Město",
+   "address": "Opatovická 12, 110 00 Praha 1",
+   "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Q+Cafe+Opatovicka+12+Prague",
+   "hours": "יומי ~13:00–02:00",
+   "price": "$",
+   "why": "קפה-בר מקומי של הקהילה, רגוע ושיחתי. 3 דק׳ מ-Alma ומ-Friends — פרה-דרינק טוב.",
+   "tags": [
+    "gay",
+    "late"
+   ],
+   "sourceUrls": [
+    "https://nomadicboys.com/prague-gay-travel-guide/",
+    "https://www.misterbandb.com/gay-guide/czech-republic/prague/50-bars-clubs"
+   ],
+   "phone": ""
+  },
+  {
+   "id": "up-down",
+   "name": "UP&DOWN Bar & Club",
+   "nameHe": "אפ אנד דאון",
+   "category": "night",
+   "subcategory": "בר-מועדון",
+   "area": "Žižkov",
+   "address": "Seifertova 32, 130 00 Praha 3",
+   "mapsUrl": "https://www.google.com/maps/search/?api=1&query=UP%26DOWN+Bar+Seifertova+32+Prague",
+   "hours": "יומי עד ~03:00 · מועדון בקומה התחתונה אחרי 21:00",
+   "price": "$",
+   "why": "בר למעלה ורחבת ריקודים למטה — אחת האופציות היחידות לרקוד בשני/שלישי.",
+   "tags": [
+    "gay",
+    "late"
+   ],
+   "sourceUrls": [
+    "https://nomadicboys.com/prague-gay-travel-guide/",
+    "https://www.misterbandb.com/gay-guide/czech-republic/prague/50-bars-clubs"
+   ],
+   "phone": ""
+  },
+  {
+   "id": "klub21",
+   "name": "Klub 21",
+   "nameHe": "קלאב 21",
+   "category": "night",
+   "subcategory": "בר-מועדון",
+   "area": "Vinohrady",
+   "address": "Římská 21, 120 00 Praha 2",
+   "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Klub+21+Rimska+21+Prague",
+   "hours": "סגור בא׳ · אחרת עד 03:00 · כניסה בזמזם, 25+",
+   "price": "$",
+   "why": "בר-מועדון מקומי לקהל בוגר יותר, 5 דק׳ מ-The Saints.",
+   "tags": [
+    "gay",
+    "late"
+   ],
+   "sourceUrls": [
+    "https://nomadicboys.com/prague-gay-travel-guide/",
+    "https://www.misterbandb.com/gay-guide/czech-republic/prague/50-bars-clubs"
+   ],
+   "phone": ""
+  },
+  {
+   "id": "celebrity",
+   "name": "Celebrity Café",
+   "nameHe": "סלבריטי קפה",
+   "category": "night",
+   "subcategory": "בר",
+   "area": "Vinohrady",
+   "address": "Vinohradská 40, 120 00 Praha 2",
+   "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Celebrity+Cafe+Vinohradska+40+Prague",
+   "hours": "יומי 8:00–23:00 (סופ״ש עד 01:00)",
+   "price": "$",
+   "why": "בית קפה-בר גאה, טוב לבראנץ׳ או לדרינק מוקדם לפני הסיינטס.",
+   "tags": [
+    "gay"
+   ],
+   "sourceUrls": [
+    "https://nomadicboys.com/prague-gay-travel-guide/",
+    "https://www.misterbandb.com/gay-guide/czech-republic/prague/50-bars-clubs"
+   ],
+   "phone": ""
+  },
+  {
+   "id": "flirt",
+   "name": "Café Bar Flirt",
+   "nameHe": "קפה בר פלירט",
+   "category": "night",
+   "subcategory": "בר",
+   "area": "Staré Město",
+   "address": "Martinská 5, 110 00 Praha 1",
+   "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Cafe+Bar+Flirt+Martinska+5+Prague",
+   "hours": "יומי 12:00–01:00",
+   "price": "$",
+   "why": "בר גאה קטן בעיר העתיקה, ליד Na Příkopě — עצירה נוחה בין קניות לערב.",
+   "tags": [
+    "gay"
+   ],
+   "sourceUrls": [
+    "https://nomadicboys.com/prague-gay-travel-guide/",
+    "https://www.misterbandb.com/gay-guide/czech-republic/prague/50-bars-clubs"
+   ],
+   "phone": ""
+  },
+  {
+   "id": "u-rudolfa",
+   "name": "Klub U Rudolfa",
+   "nameHe": "קלאב או רודולפה",
+   "category": "night",
+   "subcategory": "בר",
+   "area": "Nové Město",
+   "address": "Mezibranská 3, 110 00 Praha 1",
+   "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Klub+U+Rudolfa+Mezibranska+3+Prague",
+   "hours": "יומי עד 02:00",
+   "price": "$",
+   "why": "הבר הגאה הוותיק ביותר שפועל ברציפות, קהל מקומי. ליד מוזיאון לאומי.",
+   "tags": [
+    "gay",
+    "late"
+   ],
+   "sourceUrls": [
+    "https://nomadicboys.com/prague-gay-travel-guide/",
+    "https://www.misterbandb.com/gay-guide/czech-republic/prague/50-bars-clubs"
+   ],
+   "phone": ""
+  },
+  {
+   "id": "piano-bar",
+   "name": "Piano Bar",
+   "nameHe": "פיאנו בר",
+   "category": "night",
+   "subcategory": "בר",
+   "area": "Vinohrady / Žižkov",
+   "address": "⚠️ כתובת לאמת (Koubkova או Milešovská 10)",
+   "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Piano+Bar+Prague+gay",
+   "hours": "יומי עד ~01:00 · דראג, בינגו בא׳",
+   "price": "$",
+   "why": "⚠️ לא מאומת — פועל מ-1995 אבל הכתובת סותרת בין מקורות. לבדוק במפות לפני שהולכים.",
+   "tags": [
+    "gay"
+   ],
+   "sourceUrls": [
+    "https://www.misterbandb.com/gay-guide/czech-republic/prague/50-bars-clubs"
+   ],
+   "phone": ""
+  },
+  {
+   "id": "termix",
+   "name": "Club TERmix",
+   "nameHe": "טרמיקס",
+   "category": "night",
+   "subcategory": "מועדון",
+   "area": "Vinohrady",
+   "address": "Třebízského 1514/4a, 120 00 Praha 2",
+   "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Club+TERmix+Trebizskeho+4a+Prague",
+   "hours": "ד׳–שבת 22:00–05:00 · בזמן הטיול: רק ד׳ 11.11 (דיסקו)",
+   "price": "כניסה בתשלום ⚠️",
+   "why": "מועדון ריקודים קטן עם קהל צעיר. פתוח רק ביום רביעי — רלוונטי רק אם טיסת החזור מאוחרת.",
+   "tags": [
+    "gay",
+    "late",
+    "רק אם הטיסה מאוחרת"
+   ],
+   "sourceUrls": [
+    "https://nomadicboys.com/prague-gay-travel-guide/",
+    "https://www.misterbandb.com/gay-guide/czech-republic/prague/50-bars-clubs"
+   ],
+   "phone": ""
+  },
+  {
+   "id": "mezipatra-party",
+   "name": "Mezipatra Closing Party — Lucerna Café",
+   "nameHe": "מסיבת הסיום של מזיפטרה",
+   "category": "night",
+   "subcategory": "אירוע",
+   "area": "Nové Město",
+   "address": "Vodičkova 36, 110 00 Praha 1 (Pasáž Lucerna)",
+   "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Mezipatra+Closing+Party+%E2%80%94+Lucerna+Caf%C3%A9%2C+Vodi%C4%8Dkova+36%2C+110+00+Praha+1+%28Pas%C3%A1%C5%BE+Lucerna%29",
+   "hours": "ד׳ 11.11 מ-21:00 עד מאוחר",
+   "price": "חינם",
+   "why": "מסיבת הסיום החינמית של הפסטיבל עם DJ Šimon Holý — האירוע הקווירי המאומת הכי טוב בחלון הטיול. רק אם טיסת החזור מאוחרת.",
+   "tags": [
+    "gay",
+    "free",
+    "late",
+    "רק אם הטיסה מאוחרת"
+   ],
+   "sourceUrls": [
+    "https://mezipatra.cz/en/program/off-program.html"
+   ],
+   "phone": ""
+  },
+  {
+   "id": "two-steps",
+   "name": "Two Steps Bar (The Grand Mark)",
+   "nameHe": "בר המלון",
+   "category": "night",
+   "subcategory": "בר",
+   "area": "Nové Město",
+   "address": "Hybernská 12, 110 00 Praha 1",
+   "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Two+Steps+Bar+%28The+Grand+Mark%29%2C+Hybernsk%C3%A1+12%2C+110+00+Praha+1",
+   "hours": "⚠️ שעות לאמת בקבלה",
+   "price": "$$$",
+   "why": "הבר במלון — דרינק ראשון אחרי הנחיתה בלי לצאת לקור.",
+   "tags": [
+    "rain"
+   ],
+   "sourceUrls": [],
+   "phone": "+420 226 226 111"
+  },
+  {
+   "id": "xmas-markets",
+   "name": "Vánoční trhy",
+   "nameHe": "שווקי חג המולד — עוד לא פתוחים!",
+   "category": "shopping",
+   "subcategory": "שווקים",
+   "area": "Staré Město / Nové Město",
+   "address": "",
+   "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Starom%C4%9Bstsk%C3%A9+n%C3%A1m%C4%9Bst%C3%AD%2C+Praha",
+   "hours": "העיר העתיקה וּואצלב: מ-28.11 עד 6.1 · נאמנסטי מירו: מ-20.11 · נאמנסטי רפובליקי: מ-25.11",
+   "price": "",
+   "why": "שווקי חג המולד נפתחים רק אחרי שאנחנו חוזרים — לא לתכנן עליהם. אפשר לראות הכנות והקמת דוכנים. החלופות: שוק ז׳יראק ברביעי בבוקר, Hall 22 ומרכזי הקניות למטה.",
+   "tags": [
+    "free"
+   ],
+   "sourceUrls": [
+    "https://loudavymkrokem.cz/en/christmas-markets-prague/"
+   ],
+   "phone": ""
+  },
+  {
+   "id": "jirak",
+   "name": "Farmářské trhy Jiřák",
+   "nameHe": "שוק האיכרים ז׳יראק",
+   "category": "shopping",
+   "subcategory": "שווקים",
+   "area": "Vinohrady",
+   "address": "náměstí Jiřího z Poděbrad, 130 00 Praha 3",
+   "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Farm%C3%A1%C5%99sk%C3%A9+trhy+Ji%C5%99%C3%A1k%2C+n%C3%A1m%C4%9Bst%C3%AD+Ji%C5%99%C3%ADho+z+Pod%C4%9Bbrad%2C+130+00+Praha+3",
+   "hours": "ד׳–שבת, בוקר ⚠️ לוח נובמבר לא מאומת",
+   "price": "$",
+   "why": "שוק האיכרים היחיד שיפעל בזמן הטיול (רביעי בבוקר): גבינות, מאפים, נקניקים ויין. מטרו A Jiřího z Poděbrad.",
+   "tags": [
+    "free"
+   ],
+   "sourceUrls": [
+    "https://yumprague.com/places-farmers-markets"
+   ],
+   "phone": ""
+  },
+  {
+   "id": "hall22",
+   "name": "Pražská tržnice — Hala 22",
+   "nameHe": "השוק של הולשוביצה (Hall 22)",
+   "category": "shopping",
+   "subcategory": "שווקים",
+   "area": "Holešovice",
+   "address": "Bubenské nábřeží 306/13, 170 00 Praha 7",
+   "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Pra%C5%BEsk%C3%A1+tr%C5%BEnice+%E2%80%94+Hala+22%2C+Bubensk%C3%A9+n%C3%A1b%C5%99e%C5%BE%C3%AD+306%2F13%2C+170+00+Praha+7",
+   "hours": "⚠️ שעות לאמת",
+   "price": "$",
+   "why": "שוק מקורה שפועל כל השנה במתחם השווקים ההיסטורי — אופציה לגשם.",
+   "tags": [
+    "rain"
+   ],
+   "sourceUrls": [
+    "https://yumprague.com/places-farmers-markets"
+   ],
+   "phone": ""
+  },
+  {
+   "id": "palladium",
+   "name": "Palladium",
+   "nameHe": "קניון פלאדיום",
+   "category": "shopping",
+   "subcategory": "קניונים",
+   "area": "Nové Město",
+   "address": "náměstí Republiky 1, 110 00 Praha 1",
+   "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Palladium%2C+n%C3%A1m%C4%9Bst%C3%AD+Republiky+1%2C+110+00+Praha+1",
+   "hours": "~9:00–22:00 ⚠️ · פתוח גם בא׳",
+   "price": "",
+   "why": "הקניון הכי קרוב — 2 דק׳ מהמלון. ~200 חנויות; חלק מהרשתות מתחילות מבצעי \"בלאק פריידיי\" כבר בתחילת נובמבר.",
+   "tags": [
+    "rain"
+   ],
+   "sourceUrls": [
+    "https://www.ceskenoviny.cz/zpravy/2444574"
+   ],
+   "phone": ""
+  },
+  {
+   "id": "na-prikope",
+   "name": "Na Příkopě + Václavské náměstí",
+   "nameHe": "נה פז׳יקופה וכיכר ואצלב",
+   "category": "shopping",
+   "subcategory": "רחובות",
+   "area": "Nové Město",
+   "address": "Na Příkopě, 110 00 Praha 1",
+   "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Na+P%C5%99%C3%ADkop%C4%9B+%2B+V%C3%A1clavsk%C3%A9+n%C3%A1m%C4%9Bst%C3%AD%2C+Na+P%C5%99%C3%ADkop%C4%9B%2C+110+00+Praha+1",
+   "hours": "בדרך כלל 10:00–20:00",
+   "price": "",
+   "why": "רחוב הרשתות הראשי (Zara, H&M, Mango ועוד) שמתחבר לכיכר ואצלב — 5 דק׳ מהמלון.",
+   "tags": [],
+   "sourceUrls": [
+    "https://www.ceskenoviny.cz/zpravy/2444574"
+   ],
+   "phone": ""
+  },
+  {
+   "id": "parizska",
+   "name": "Pařížská",
+   "nameHe": "רחוב פריז׳סקה",
+   "category": "shopping",
+   "subcategory": "רחובות",
+   "area": "Josefov",
+   "address": "Pařížská, 110 00 Praha 1",
+   "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Pa%C5%99%C3%AD%C5%BEsk%C3%A1%2C+Pa%C5%99%C3%AD%C5%BEsk%C3%A1%2C+110+00+Praha+1",
+   "hours": "בדרך כלל 10:00–19:00",
+   "price": "$$$$",
+   "why": "שדרת המותגים היוקרתיים בין כיכר העיר העתיקה לנהר — עוברים בה ממילא ביום של הרובע היהודי.",
+   "tags": [],
+   "sourceUrls": [
+    "https://discoveringprague.com/ar/best-restaurants-in-prague/"
+   ],
+   "phone": ""
+  },
+  {
+   "id": "fashion-arena",
+   "name": "Fashion Arena Prague Outlet",
+   "nameHe": "אאוטלט פאשן ארנה",
+   "category": "shopping",
+   "subcategory": "אאוטלט",
+   "area": "Štěrboholy",
+   "address": "Zamenhofova 440, 108 00 Praha 10",
+   "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Fashion+Arena+Prague+Outlet%2C+Zamenhofova+440%2C+108+00+Praha+10",
+   "hours": "~10:00–21:00 ⚠️",
+   "price": "",
+   "why": "אאוטלט עם 200+ מותגים והחזר מע״מ לתיירים זכאים. מטרו A ל-Depo Hostivař ואוטובוס 238 (~40 דק׳). רק אם יש חצי יום פנוי.",
+   "tags": [
+    "rain"
+   ],
+   "sourceUrls": [
+    "https://www.expats.cz/czech-news/article/secret-perks-of-shopping-at-czechia-s-largest-outlet-center"
+   ],
+   "phone": ""
+  },
+  {
+   "id": "chodov",
+   "name": "Westfield Chodov",
+   "nameHe": "קניון וסטפילד חודוב",
+   "category": "shopping",
+   "subcategory": "קניונים",
+   "area": "Chodov",
+   "address": "Roztylská 2321/19, 148 00 Praha 11",
+   "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Westfield+Chodov%2C+Roztylsk%C3%A1+2321%2F19%2C+148+00+Praha+11",
+   "hours": "~9:00–21:00 ⚠️",
+   "price": "",
+   "why": "הקניון הגדול בעיר, מטרו C Chodov. רק אם מחפשים מבחר רחב במיוחד.",
+   "tags": [
+    "rain"
+   ],
+   "sourceUrls": [
+    "https://www.expats.cz/czech-news/article/secret-perks-of-shopping-at-czechia-s-largest-outlet-center"
+   ],
+   "phone": ""
+  },
+  {
+   "id": "novy-smichov",
+   "name": "Nový Smíchov",
+   "nameHe": "קניון נובי סמיחוב",
+   "category": "shopping",
+   "subcategory": "קניונים",
+   "area": "Smíchov",
+   "address": "Plzeňská 8, 150 00 Praha 5",
+   "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Nov%C3%BD+Sm%C3%ADchov%2C+Plze%C5%88sk%C3%A1+8%2C+150+00+Praha+5",
+   "hours": "~9:00–21:00 ⚠️",
+   "price": "",
+   "why": "קניון גדול על מטרו B Anděl — אפשר לשלב עם ארוחה ב-Manifesto Market.",
+   "tags": [
+    "rain"
+   ],
+   "sourceUrls": [
+    "https://prague.eu/en/objevujte/manifesto-market-andel/"
+   ],
+   "phone": ""
+  },
+  {
+   "id": "vintage",
+   "name": "Vintage & design (Bohemian Retro / Kurátor / Pragtique / Pavilon Vinohrady)",
+   "nameHe": "וינטג׳ ועיצוב צ׳כי",
+   "category": "shopping",
+   "subcategory": "וינטג׳ ועיצוב",
+   "area": "Praha 1–2",
+   "address": "",
+   "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Pragtique+Praha",
+   "hours": "⚠️ לא מאומת ל-2026",
+   "price": "",
+   "why": "⚠️ רשימת כיווני חיפוש בלבד — לבדוק במפות שהחנות קיימת ופתוחה לפני שהולכים. Pragtique טובה למזכרות עיצוביות.",
+   "tags": [],
+   "sourceUrls": [],
+   "phone": ""
+  },
+  {
+   "id": "mlejnice",
+   "name": "Restaurace Mlejnice",
+   "nameHe": "מלייניצה — גולש בתוך לחם",
+   "category": "food",
+   "subcategory": "צ׳כי מסורתי",
+   "area": "Staré Město",
+   "address": "Kožná 488/14, 110 00 Praha 1",
+   "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Restaurace+Mlejnice%2C+Ko%C5%BEn%C3%A1+14%2C+Praha+1",
+   "hours": "כל יום 11:00–23:00",
+   "price": "~350–500 Kč לאדם",
+   "why": "המקום המפורסם לגולש מוגש בתוך כיכר לחם אפויה, בסמטה קטנה 2 דק׳ מהשעון האסטרונומי. אווירה כפרית, בירת Kozel. מלא בשעות שיא — עדיף להזמין שולחן.",
+   "tags": [
+    "mustSee",
+    "reserve",
+    "queue"
+   ],
+   "sourceUrls": [
+    "https://theculturetrip.com/europe/czech-republic/articles/a-guide-to-prague-s-best-restaurants-land-of-pilsner-and-pork-knuckle",
+    "https://st-christophers.co.uk/travel-blog/best-affordable-czech-restaurants-in-prague",
+    "https://www.tripadvisor.com/--d1036359.html"
+   ],
+   "phone": "+420 224 228 635",
+   "bookingUrl": "http://www.restaurace-mlejnice.cz",
+   "bookingLabel": "הזמנת שולחן"
+  },
+  {
+   "id": "image-theatre",
+   "name": "Image Black Light Theatre",
+   "nameHe": "תיאטרון האור השחור Image",
+   "category": "sights",
+   "subcategory": "מופע ערב",
+   "area": "Staré Město",
+   "address": "Pařížská 4, 110 00 Praha 1",
+   "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Image+Theatre%2C+Pa%C5%99%C3%AD%C5%BEsk%C3%A1+4%2C+Praha+1",
+   "hours": "מופעים ב-20:00, ~85–90 דק׳ · קופה מ-16:00 ביום המופע",
+   "price": "~480–580 Kč",
+   "why": "תיאטרון האור השחור הוא אמנות שנולדה בפראג: רקדנים זוהרים שמרחפים ונעלמים על במה חשוכה, בלי מילים. Image נחשב מהמקצועיים בעיר ופועל מ-1989. ⚠️ לא מתקיים כל ערב — לבדוק שיש מופע ב-9.11; חלופה: Srnec Theatre (Vojtěšská 6) או Ta Fantastika.",
+   "tags": [
+    "bookAhead",
+    "rain"
+   ],
+   "sourceUrls": [
+    "https://prague.eu/en/objevujte/image-theatre",
+    "https://www.tiqets.com/en/prague-attractions-c64162/tickets-for-image-black-light-theatre-p1058224/",
+    "https://bestpragueguide.com/en/blog/prague-black-light-theater"
+   ],
+   "phone": "",
+   "bookingUrl": "https://www.tiqets.com/en/prague-attractions-c64162/tickets-for-image-black-light-theatre-p1058224/",
+   "bookingLabel": "כרטיסים"
+  },
+  {
+   "id": "alchemist",
+   "name": "The Alchemist Bar",
+   "nameHe": "האלכימיסט — בר קוקטיילים",
+   "category": "night",
+   "subcategory": "קוקטיילים",
+   "area": "Staré Město",
+   "address": "Provaznická 386/1, 110 00 Praha 1",
+   "mapsUrl": "https://www.google.com/maps/search/?api=1&query=The+Alchemist+Bar%2C+Provaznick%C3%A1+1%2C+Praha+1",
+   "hours": "א׳–ה׳ 19:00–02:00 · ו׳–שבת 18:00–03:00",
+   "price": "~$25 לאדם (קוקטייל ~300 Kč)",
+   "why": "בר קוקטיילים תיאטרלי בעיצוב בית של אלכימאי: עתיקות, קלפי טארוט ומשחק 'Choose Your Fate'. 95 נקודות בדירוג Falstaff 2026. קבוצות קטנות — מומלץ להזמין. לבוש smart casual. 8 דק׳ הליכה מהמלון.",
+   "tags": [
+    "reserve",
+    "late"
+   ],
+   "sourceUrls": [
+    "https://www.timeout.com/prague/bars-and-pubs/the-alchemist-bar",
+    "https://www.arrivalguides.com/en/Travelguide/PRAGUE/barsandnightlife/the-alchemist-bar-131056",
+    "https://joinpearl.co/bars/prague/the-alchemist-bar"
+   ],
+   "phone": "+420 251 510 940",
+   "bookingUrl": "https://www.thealchemistbar.cz/en",
+   "bookingLabel": "הזמנת שולחן"
+  },
+  {
+   "id": "kungfu-ramen",
+   "name": "Kungfu Ramen (Havelská)",
+   "nameHe": "קונג פו ראמן",
+   "category": "food",
+   "subcategory": "אסייתי",
+   "area": "Staré Město",
+   "address": "Havelská 2, 110 00 Praha 1",
+   "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Kungfu+Ramen%2C+Havelsk%C3%A1+2%2C+Praha+1",
+   "hours": "כל יום 11:00–23:00 · סניף שני: Jilská 7 (200 מ׳ מהשעון)",
+   "price": "~250–350 Kč לאדם",
+   "why": "ראמן פיוז׳ן יפני-סיני עם אטריות במשיכת יד ועיצוב של רחוב אסייתי. מנה חמה ומהירה ליום קר, גם אופציות טבעוניות. בלי הזמנה. 12 דק׳ הליכה מהמלון.",
+   "tags": [
+    "walkin",
+    "rain",
+    "veg"
+   ],
+   "sourceUrls": [
+    "https://www.slevomat.cz/podnik/191564-kungfu-ramen",
+    "https://spinach.guide/venues/kungfu-ramen-havelska-1317/",
+    "https://axxoshotels.com/restaurant-kung-fu-ramen"
+   ],
+   "phone": ""
+  },
+  {
+   "id": "cinnamood",
+   "name": "Cinnamood",
+   "nameHe": "סינמוד — רולים של קינמון",
+   "category": "food",
+   "subcategory": "קפה ומתוקים",
+   "area": "Vinohrady",
+   "address": "náměstí Jiřího z Poděbrad, 130 00 Praha 3",
+   "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Cinnamood%2C+n%C3%A1m%C4%9Bst%C3%AD+Ji%C5%99%C3%ADho+z+Pod%C4%9Bbrad%2C+Praha",
+   "hours": "⚠️ שעות לאמת במפות (בדרך כלל מבוקר) · סניף take-away נוסף: Jungmannova, ליד U Pinkasů",
+   "price": "~120–150 Kč לרול",
+   "why": "רשת רולי קינמון גרמנית שנפתחה בפראג ב-2025 והפכה ללהיט ברשתות. רוב הרולים טבעוניים; הכי מומלץ: Macadamia Roll. הסניף בכיכר Jiřího z Poděbrad הוא היחיד עם ישיבה.",
+   "tags": [
+    "walkin",
+    "veg"
+   ],
+   "sourceUrls": [
+    "https://www.mediaguru.cz/clanky/2025/07/znacka-cinnamood-otevira-v-praze-sve-prvni-prodejny/",
+    "https://cc.cz/do-prahy-dorazily-sladke-rolky-z-nemecka-jsou-hrave-vlacne-i-druhy-den-a-vyberou-si-z-nich-i-vegani/",
+    "https://spinach.guide/venues/cinnamood-222442/"
+   ],
+   "phone": ""
+  }
+ ],
+ "practical": {
+  "emergency": [
+   {
+    "label": "חירום כללי (מדברים אנגלית)",
+    "number": "112",
+    "note": "המספר הראשון לכל מצב"
+   },
+   {
+    "label": "אמבולנס",
+    "number": "155",
+    "note": ""
+   },
+   {
+    "label": "משטרה",
+    "number": "158",
+    "note": "משטרה עירונית: 156"
+   },
+   {
+    "label": "כבאות",
+    "number": "150",
+    "note": ""
+   },
+   {
+    "label": "שגרירות ישראל בפראג",
+    "number": "+420 233 097 500",
+    "note": "⚠️ לאמת לפני הנסיעה"
+   },
+   {
+    "label": "המלון — The Grand Mark",
+    "number": "+420 226 226 111",
+    "note": "Hybernská 12"
+   }
+  ],
+  "transport": [
+   {
+    "title": "מהשדה למלון",
+    "text": "Bolt/Uber: ~€15–22 (380–550 Kč), 25–35 דק׳; אחרי חצות ~€18–24. אוטובוס Airport Express (AE) לתחנה המרכזית Hlavní nádraží (~10 דק׳ הליכה מהמלון) ב-~60 Kč, כל 30 דק׳, עד ~21:30. חלופה זולה: אוטובוס 119 למטרו A ב-Nádraží Veleslavín עם כרטיס 90 דק׳. לא לקחת נהגים שמציעים באולם הנוסעים."
+   },
+   {
+    "title": "כרטיס 72 שעות",
+    "text": "כרטיס 72 שעות באפליקציה 340 Kč (בנייר 350) — מתאים בדיוק לשני–רביעי. 24 שעות 140 Kč, 90 דק׳ 46 Kč, 30 דק׳ 36 Kč. קונים באפליקציית PID Lítačka ומפעילים לפני העלייה. יש ביקורות פתע וקנסות."
+   },
+   {
+    "title": "מטרו ליד המלון",
+    "text": "Náměstí Republiky (קו B) — 2 דק׳ הליכה. Hlavní nádraží (קו C) ~10 דק׳. Můstek (A+B) ~10 דק׳ הליכה."
+   },
+   {
+    "title": "מוניות",
+    "text": "רק Bolt/Uber או מונית מוזמנת (AAA Taxi, מונה ~€20–26 מהשדה). לא לעצור מונית ברחוב בעיר העתיקה."
+   },
+   {
+    "title": "ברגל",
+    "text": "רוב היעדים בפראג 1 במרחק 10–20 דק׳ הליכה. אבני המרצפת חלקלקות בגשם — נעליים עם אחיזה."
+   }
+  ],
+  "tips": [
+   {
+    "icon": "💳",
+    "title": "תשלום",
+    "text": "כרטיס/טלפון מתקבלים כמעט בכל מקום (Manifesto ללא מזומן בכלל). כשמכשיר שואל — לחייב תמיד בקורונות (CZK), לא בשקלים."
+   },
+   {
+    "icon": "🏧",
+    "title": "מזומן",
+    "text": "למשוך רק מכספומט של בנק (לא Euronet), ולא להחליף בדוכנים ברחוב. סכום קטן מספיק."
+   },
+   {
+    "icon": "💱",
+    "title": "שער",
+    "text": "~6.8 Kč לשקל (1 Kč ≈ 0.146 ₪, נבדק 7.11.2026). ~25 Kč = €1. 1,000 Kč ≈ 146 ₪."
+   },
+   {
+    "icon": "🍺",
+    "title": "טיפ",
+    "text": "~10% מקובל. אומרים למלצר את הסכום הכולל כשמשלמים, או מעגלים. בקנטינה מוצע 10% בקבלה."
+   },
+   {
+    "icon": "🌧️",
+    "title": "מזג אוויר",
+    "text": "3–9°C, טפטוף תכוף, שקיעה ~16:30 (מחשיך כבר ב-15:00 ביום מעונן). מעיל חם עמיד למים, שכבות, כובע וכפפות. לבדוק תחזית יום לפני."
+   },
+   {
+    "icon": "🕚",
+    "title": "יום מרטין (11.11)",
+    "text": "ב-11:11 פותחים את היין הצעיר וכל העיר מגישה אווז. להזמין מקום לצהריים."
+   },
+   {
+    "icon": "🎄",
+    "title": "שווקי חג המולד",
+    "text": "לא פתוחים בזמן הטיול — נפתחים 20–28.11. ראו לשונית שופינג לחלופות."
+   },
+   {
+    "icon": "🏳️‍🌈",
+    "title": "קהילה",
+    "text": "פראג מאוד ידידותית. רוב הברים בווינוהרדי (Praha 2), 10–15 דק׳ מהמלון. שני ושלישי ערבים שקטים — מתחילים מוקדם יותר."
+   },
+   {
+    "icon": "⚠️",
+    "title": "נוגט ב-Celetná",
+    "text": "אזהרת בוטוליזם 2026 על נוגט שנמכר ברחוב Celetná — לא לקנות."
+   }
+  ],
+  "phrases": [
+   {
+    "he": "שלום (רשמי)",
+    "cs": "Dobrý den",
+    "translit": "דוֹבּרִי דֶן"
+   },
+   {
+    "he": "היי / ביי (חברי)",
+    "cs": "Ahoj",
+    "translit": "אַהוֹי"
+   },
+   {
+    "he": "תודה",
+    "cs": "Děkuji",
+    "translit": "דְיֶקוּיִי"
+   },
+   {
+    "he": "בבקשה",
+    "cs": "Prosím",
+    "translit": "פְּרוֹסִים"
+   },
+   {
+    "he": "שתי בירות, בבקשה",
+    "cs": "Dvě piva, prosím",
+    "translit": "דְבְיֶה פִּיווָה, פְּרוֹסִים"
+   },
+   {
+    "he": "החשבון, בבקשה",
+    "cs": "Zaplatím, prosím",
+    "translit": "זַפְּלַטִים, פְּרוֹסִים"
+   },
+   {
+    "he": "לחיים!",
+    "cs": "Na zdraví!",
+    "translit": "נַה זְדְרָאבִי"
+   },
+   {
+    "he": "סליחה",
+    "cs": "Promiňte",
+    "translit": "פְּרוֹמִינְטֶה"
+   },
+   {
+    "he": "כן / לא",
+    "cs": "Ano / Ne",
+    "translit": "אַנוֹ / נֶה"
+   },
+   {
+    "he": "איפה...?",
+    "cs": "Kde je...?",
+    "translit": "גְדֶה יֶה...?"
+   }
+  ]
+ }
+}
+</script>
+
+<script id="app">
+(function(){
+"use strict";
+var $=function(s,r){return (r||document).querySelector(s)};
+var $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+document.documentElement.classList.remove('snap');
+
+/* ---------- data ---------- */
+var D={};
+try{D=JSON.parse($('#plan-data').textContent)}catch(e){D={meta:{title:'שגיאה בטעינת הנתונים'}}}
+var M=D.meta||{}; var TZ=M.timezone||'Europe/Prague';
+var PLACES={}; (D.places||[]).forEach(function(p){PLACES[p.id]=p});
+if(D.hotel){PLACES.hotel=Object.assign({id:'hotel',category:'hotel'},D.hotel)}
+
+/* ---------- storage (always try/catch) ---------- */
+var KEY='prague-plan:'+(M.title||'')+':'+(M.startDate||'');
+var S={tab:'schedule',checked:{},theme:''};
+function load(){try{var s=JSON.parse(localStorage.getItem(KEY)||'{}');Object.assign(S,s);S.checked=S.checked||{}}catch(e){}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));return true}catch(e){return false}}
+function cachePlan(){try{localStorage.setItem(KEY+':plan',JSON.stringify({savedAt:new Date().toISOString(),version:M.version,data:D}));return true}catch(e){return false}}
+load();
+
+/* ---------- helpers ---------- */
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+var IC={
+ pin:'<path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>',
+ copy:'<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h8"/>',
+ car:'<path d="M5 16V11l2-5h10l2 5v5M5 16h14M5 16v2m14-2v2M3 11h18"/><circle cx="8" cy="13.5" r=".6"/><circle cx="16" cy="13.5" r=".6"/>',
+ phone:'<path d="M5 3h4l2 5-2.5 1.5a11 11 0 0 0 6 6L16 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 5a2 2 0 0 1 2-2"/>',
+ check:'<path d="m5 12 5 5L20 7"/>',
+ clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+ coin:'<circle cx="12" cy="12" r="9"/><path d="M9 9.5h4.5a2 2 0 0 1 0 4H10a2 2 0 0 0 0 4h5M12 6v2m0 9v1"/>',
+ chev:'<path d="m6 9 6 6 6-6"/>',
+ link:'<path d="M10 14a4 4 0 0 0 6 0l3-3a4 4 0 0 0-6-6l-1 1M14 10a4 4 0 0 0-6 0l-3 3a4 4 0 0 0 6 6l1-1"/>'
+};
+function ic(n){return '<svg class="i" viewBox="0 0 24 24" aria-hidden="true">'+IC[n]+'</svg>'}
+var TAGS={
+ reserve:['צריך הזמנה','t-red'], bookAhead:['להזמין מראש','t-red'], cash:['מזומן בלבד','t-warn'],
+ walkin:['בלי הזמנה','t-ok'], free:['חינם','t-ok'], mustSee:['חובה ⭐','t-gold'], gay:['🏳️‍🌈 גאה','t-pride'],
+ late:['פתוח מאוחר','t-info'], rain:['טוב לגשם','t-info'], veg:['צמחוני','t-ok'], kosher:['כשר','t-ok'],
+ view:['תצפית','t-gold'], closedMon:['סגור בשני','t-warn'], queue:['תורים','t-warn']
+};
+function tagsHtml(t){if(!t||!t.length)return '';return '<div class="tags">'+t.map(function(k){var d=TAGS[k]||[k,''];return '<span class="tag '+d[1]+'">'+esc(d[0])+'</span>'}).join('')+'</div>'}
+function mapsUrl(p){if(p.mapsUrl)return p.mapsUrl;var q=[p.name,p.address].filter(Boolean).join(', ');return q?'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(q):''}
+function telHref(n){return 'tel:'+String(n).replace(/[^\d+]/g,'')}
+function dateParts(iso){var p=String(iso).split('-');return {y:+p[0],m:+p[1],d:+p[2]}}
+function dayName(iso){try{var p=dateParts(iso);return new Intl.DateTimeFormat('he-IL',{weekday:'short',timeZone:'UTC'}).format(new Date(Date.UTC(p.y,p.m-1,p.d)))}catch(e){return ''}}
+function dm(iso){var p=dateParts(iso);return p.d+'.'+p.m}
+function hm(dt){var m=/T(\d\d:\d\d)/.exec(dt||'');return m?m[1]:''}
+function dOf(dt){return String(dt||'').slice(0,10)}
+function fdt(dt){var d=dOf(dt),t=hm(dt);if(!/^\d{4}-\d\d-\d\d$/.test(d))return '<span class="muted">טרם נקבע</span>';return esc(dayName(d)+' '+dm(d))+' · '+(t?'<span class="ltr">'+esc(t)+'</span>':'<span class="muted">שעה טרם נקבעה</span>')}
+function toMin(t){var m=/^(\d{1,2}):(\d\d)/.exec(t||'');return m?(+m[1])*60+(+m[2]):null}
+
+/* Prague "now" (override for testing: window.__NOW__='2026-11-09T13:05') */
+function pragueNow(){
+  var o=window.__NOW__||M.debugNow;
+  if(o)return {date:o.slice(0,10),min:toMin(o.slice(11))};
+  try{var f=new Intl.DateTimeFormat('en-CA',{timeZone:TZ,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(new Date());
+    var g={};f.forEach(function(x){g[x.type]=x.value});return {date:g.year+'-'+g.month+'-'+g.day,min:(+g.hour%24)*60+(+g.minute)}}
+  catch(e){var d=new Date();return {date:d.toISOString().slice(0,10),min:d.getHours()*60+d.getMinutes()}}
+}
+function daysBetween(a,b){var x=dateParts(a),y=dateParts(b);return Math.round((Date.UTC(y.y,y.m-1,y.d)-Date.UTC(x.y,x.m-1,x.d))/864e5)}
+
+/* ---------- action buttons ---------- */
+function actions(p,id,opts){
+  opts=opts||{};var h='';var u=mapsUrl(p),c=opts.compact;
+  if(p.bookingUrl)h+='<a class="act book" href="'+esc(p.bookingUrl)+'" target="_blank" rel="noopener">🎟️ '+esc(p.bookingLabel||'להזמנה')+'</a>';
+  if(u)h+='<a class="act primary" href="'+esc(u)+'" target="_blank" rel="noopener">'+ic('pin')+'מפה</a>';
+  if(p.address){h+='<button class="act js" data-copy="'+esc(p.address)+'" aria-label="העתק כתובת">'+ic('copy')+(c?'':'העתק כתובת')+'</button>';
+    h+='<button class="act js" data-taxi="'+esc(p.id||'')+'" data-addr="'+esc(p.address)+'" data-name="'+esc(p.name||'')+'">'+ic('car')+'לנהג</button>'}
+  if(p.phone)h+='<a class="act" href="'+esc(telHref(p.phone))+'" aria-label="טלפון">'+ic('phone')+(c?'':'<span class="ltr">'+esc(p.phone)+'</span>')+'</a>';
+  if(id)h+='<button class="act chk" data-chk="'+esc(id)+'" aria-pressed="'+(S.checked[id]?'true':'false')+'" aria-label="'+(opts.chkLabel||'ביקרנו')+'">'+ic('check')+(c?'':(opts.chkLabel||'ביקרנו'))+'</button>';
+  return '<div class="acts">'+h+'</div>';
+}
+function addrLine(p){return p.address?'<span class="addr" dir="ltr" style="text-align:right">'+esc(p.address)+'</span>':''}
+
+/* ---------- schedule ---------- */
+function itemPlace(it){var p=it.placeId&&PLACES[it.placeId];return Object.assign({},p||{},{name:(p&&p.name)||it.title,address:it.address||(p&&p.address),mapsUrl:it.mapsUrl||(p&&p.mapsUrl),phone:it.phone||(p&&p.phone)})}
+function itemId(day,i,it){return it.id||(day.date+'-'+i)}
+function renderItem(day,it,i){
+  var id=itemId(day,i,it),p=itemPlace(it),hasLoc=!!(it.placeId||it.address||it.mapsUrl);
+  var tags=(it.tags||[]).slice();
+  return '<li class="it'+(S.checked[id]?' done':'')+'" data-item="'+esc(id)+'" data-min="'+(toMin(it.time)==null?'':toMin(it.time))+'">'+
+   '<div class="t ltr">'+esc(it.time||'—')+(it.endTime?'<small>'+esc(it.endTime)+'</small>':'')+'</div>'+
+   '<div><h4>'+esc(it.title)+'<span class="nowflag"></span></h4>'+
+   (p.nameHe&&p.name&&it.placeId?'<p class="ltr" style="text-align:right">'+esc(p.name)+(p.area?' · '+esc(p.area):'')+'</p>':'')+
+   (it.note?'<p>'+esc(it.note)+'</p>':'')+tagsHtml(tags)+
+   (hasLoc?actions(p,id,{chkLabel:'בוצע',compact:1}):'<div class="acts"><button class="act chk" data-chk="'+esc(id)+'" aria-pressed="'+(S.checked[id]?'true':'false')+'">'+ic('check')+'בוצע</button></div>')+
+   '</div></li>';
+}
+function renderSchedule(){
+  var days=D.days||[],now=pragueNow();
+  var h='<div class="vh"><h2>לו״ז יומי</h2><span class="sub">'+days.length+' ימים</span></div><div class="chips" role="toolbar">';
+  days.forEach(function(d,i){h+='<button class="chip'+(d.date===now.date?' today':'')+'" data-jump="day-'+i+'">'+esc(dayName(d.date))+' '+esc(dm(d.date))+'</button>'});
+  h+='</div>';
+  days.forEach(function(d,i){
+    var today=d.date===now.date,past=d.date<now.date;
+    h+='<details class="card day'+(today?' is-today':'')+'" id="day-'+i+'" data-date="'+esc(d.date)+'"'+(past?'':' open')+'><summary>'+
+      '<div class="dnum"><div><b>'+dateParts(d.date).d+'</b><span>'+esc(dayName(d.date))+'</span></div></div>'+
+      '<div class="dtitle"><h3>יום '+(i+1)+' · '+esc(d.title||'')+'</h3><div class="muted">'+esc(d.summary||'')+'</div></div>'+
+      '<span class="chev">'+ic('chev')+'</span></summary><ol class="tl">'+
+      (d.items||[]).map(function(it,j){return renderItem(d,it,j)}).join('')+'</ol></details>';
+  });
+  if(!days.length)h+='<div class="empty">אין עדיין לו״ז</div>';
+  $('#v-schedule').innerHTML=h;
+  markNow();
+}
+function markNow(){
+  var now=pragueNow();
+  $$('.it.now').forEach(function(e){e.classList.remove('now')});
+  $$('.nowflag').forEach(function(e){e.innerHTML=''});
+  var day=$('details.day[data-date="'+now.date+'"]');
+  if(!day)return null;
+  var items=$$('.it',day).filter(function(e){return e.dataset.min!==''});
+  var cur=null,next=null;
+  items.forEach(function(e){var m=+e.dataset.min;if(m<=now.min)cur=e;else if(!next)next=e});
+  if(cur&&next&&now.min-(+cur.dataset.min)>240)cur=null; /* stale */
+  if(cur){cur.classList.add('now');$('.nowflag',cur).innerHTML='<span class="flag now">עכשיו</span>'}
+  if(next){$('.nowflag',next).innerHTML='<span class="flag next">הבא</span>'}
+  return cur||next;
+}
+
+/* ---------- places ---------- */
+var SUBF={};
+function renderPlace(p,q){
+  var id='p:'+p.id,hl=function(s){return q?esc(s).replace(new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi'),'<mark>$1</mark>'):esc(s)};
+  return '<article class="card pl'+(S.checked[id]?' done':'')+'" data-place="'+esc(p.id)+'"><div class="hd"><div>'+
+    '<h3>'+hl(p.nameHe||p.name)+'</h3>'+(p.nameHe&&p.name?'<div class="en ltr" style="text-align:right">'+hl(p.name)+'</div>':'')+
+    '</div></div><div class="meta">'+
+    (p.area?'<span>'+ic('pin')+'<span class="ltr">'+hl(p.area)+'</span></span>':'')+
+    (p.hours?'<span>'+ic('clock')+'<bdi dir="auto">'+esc(p.hours)+'</bdi></span>':'')+
+    (p.price?'<span>'+ic('coin')+esc(p.price)+'</span>':'')+'</div>'+
+    (p.why?'<p class="why">'+hl(p.why)+'</p>':'')+tagsHtml(p.tags)+addrLine(p)+actions(p,id)+
+    ((p.sourceUrls&&p.sourceUrls.length)?'<div class="src muted">מקורות: '+p.sourceUrls.map(function(u,i){return '<a href="'+esc(u)+'" target="_blank" rel="noopener">'+(i+1)+'</a>'}).join('')+'</div>':'')+
+    '</article>';
+}
+var CAT={food:['אוכל','מסעדות, בתי קפה ובירה'],sights:['אטרקציות','מה לראות'],night:['לילה 🏳️‍🌈','ברים ומועדונים'],shopping:['שופינג','חנויות ושווקים']};
+function renderCat(cat){
+  var all=(D.places||[]).filter(function(p){return p.category===cat});
+  var subs=[];all.forEach(function(p){if(p.subcategory&&subs.indexOf(p.subcategory)<0)subs.push(p.subcategory)});
+  var f=SUBF[cat]||'';
+  var list=f?all.filter(function(p){return p.subcategory===f}):all;
+  var h='<div class="vh"><h2>'+esc(CAT[cat][0])+'</h2><span class="sub">'+list.length+' מקומות</span></div>';
+  if(subs.length>1){h+='<div class="chips"><button class="chip" data-sub="" data-cat="'+cat+'" aria-pressed="'+(!f)+'">הכל</button>'+
+    subs.map(function(s){return '<button class="chip" data-sub="'+esc(s)+'" data-cat="'+cat+'" aria-pressed="'+(f===s)+'">'+esc(s)+'</button>'}).join('')+'</div>'}
+  if(cat==='night'&&D.nightIntro)h+='<div class="card pad tip small">'+esc(D.nightIntro)+'</div>';
+  h+=list.map(function(p){return renderPlace(p)}).join('')||'<div class="empty">אין עדיין מקומות</div>';
+  $('#v-'+cat).innerHTML=h;
+}
+
+/* ---------- practical ---------- */
+function renderPractical(){
+  var P=D.practical||{},h='<div class="vh"><h2>מעשי</h2></div>';
+  /* emergency */
+  if(P.emergency&&P.emergency.length){h+='<div class="card pad"><h3>🚨 חירום</h3><div class="sos" style="margin-top:8px">'+
+    P.emergency.map(function(e){return '<a href="'+esc(telHref(e.number))+'"><b class="ltr'+(String(e.number).length>6?' long':'')+'">'+esc(e.number)+'</b><span>'+esc(e.label)+(e.note?' · '+esc(e.note):'')+'</span></a>'}).join('')+'</div></div>'}
+  /* flights */
+  (D.flights||[]).forEach(function(f){
+    h+='<div class="card pad"><h3>'+(f.direction==='back'?'🛬 טיסה חזרה':'🛫 טיסה הלוך')+'</h3><dl class="kv">'+
+     '<dt>טיסה</dt><dd class="ltr" style="text-align:right">'+esc((f.airline||'')+' '+(f.flightNo||''))+'</dd>'+
+     '<dt>מסלול</dt><dd class="ltr" style="text-align:right">'+esc(f.from)+' → '+esc(f.to)+'</dd>'+
+     '<dt>המראה</dt><dd>'+fdt(f.depart)+(f.terminal?' · טרמינל '+esc(f.terminal):'')+'</dd>'+
+     '<dt>נחיתה</dt><dd>'+fdt(f.arrive)+' <span class="muted small">(שעון מקומי)</span></dd>'+
+     (f.bookingRef?'<dt>הזמנה</dt><dd><span class="ltr">'+esc(f.bookingRef)+'</span></dd>':'')+'</dl>'+
+     (f.notes?'<p class="small muted" style="margin:8px 0 0">'+esc(f.notes)+'</p>':'')+
+     (f.bookingRef?'<div class="acts"><button class="act js" data-copy="'+esc(f.bookingRef)+'">'+ic('copy')+'העתק קוד הזמנה</button></div>':'')+'</div>';
+  });
+  /* hotel */
+  var H=D.hotel;
+  if(H){h+='<div class="card pad"><h3>🏨 '+esc(H.nameHe||H.name)+'</h3>'+(H.nameHe?'<div class="en ltr muted small" style="text-align:right">'+esc(H.name)+'</div>':'')+
+    '<dl class="kv"><dt>צ׳ק-אין</dt><dd>'+esc(dm(dOf(H.checkIn)))+' · <span class="ltr">'+esc(hm(H.checkIn))+'</span></dd>'+
+    '<dt>צ׳ק-אאוט</dt><dd>'+fdt(H.checkOut)+'</dd>'+
+    (H.bookingRef?'<dt>הזמנה</dt><dd class="ltr" style="text-align:right">'+esc(H.bookingRef)+'</dd>':'')+'</dl>'+
+    (H.notes?'<p class="small muted" style="margin:8px 0 0">'+esc(H.notes)+'</p>':'')+addrLine(H)+actions(PLACES.hotel,null)+'</div>'}
+  /* currency */
+  var C=M.currency;
+  if(C&&C.perILS){h+='<div class="card pad"><h3>💱 '+esc(C.code)+' ↔ ₪</h3><p class="small muted" style="margin:2px 0 0">1 ₪ ≈ '+esc(C.perILS)+' '+esc(C.symbol||C.code)+'</p>'+
+    '<div class="conv"><input id="cz" type="number" inputmode="decimal" placeholder="'+esc(C.symbol||C.code)+'" aria-label="סכום בקורונות"><output id="ils">= ₪0</output></div>'+
+    (C.note?'<p class="small muted" style="margin:8px 0 0">'+esc(C.note)+'</p>':'')+'</div>'}
+  /* transport + tips */
+  if(P.transport&&P.transport.length){h+='<div class="card pad"><h3>🚋 תחבורה</h3>'+P.transport.map(function(t){return '<p class="small" style="margin:8px 0 0"><b>'+esc(t.title)+':</b> '+esc(t.text)+'</p>'}).join('')+'</div>'}
+  (P.tips||[]).forEach(function(t){h+='<div class="card pad tip"><h3>'+esc(t.icon||'💡')+' '+esc(t.title)+'</h3><p class="small" style="margin:4px 0 0">'+esc(t.text)+'</p></div>'});
+  /* phrases */
+  if(P.phrases&&P.phrases.length){h+='<div class="card pad"><h3>🗣️ צ׳כית בסיסית</h3><table class="phr">'+
+    P.phrases.map(function(x){return '<tr><td>'+esc(x.he)+'</td><td><div class="cs ltr" style="text-align:right">'+esc(x.cs)+'</div><div class="tr">'+esc(x.translit)+'</div></td></tr>'}).join('')+'</table></div>'}
+  /* offline tips (fixed) */
+  h+='<div class="card pad tip" id="offline-tips"><h3>🗺️ מפות בלי אינטרנט</h3><ol class="steps">'+
+    '<li>לפני הטיסה, ב-Wi-Fi: לפתוח Google Maps ולחפש "Prague".</li><li>לגעת בתמונת הפרופיל ← <b>מפות אופליין</b> ← <b>בחירת מפה משלך</b>.</li>'+
+    '<li>לסמן את כל פראג (כולל שדה התעופה) ← <b>הורדה</b> (~200MB).</li><li>בעיר: כפתורי "מפה" כאן פותחים את האפליקציה — הניווט ברגל/ברכב עובד גם בלי רשת.</li></ol></div>'+
+    '<div class="card pad tip" id="offline-howto"><h3>📴 איך לשמור לאופליין</h3>'+offlineHtml()+'</div>';
+  $('#v-practical').innerHTML=h;
+  var cz=$('#cz');if(cz)cz.addEventListener('input',function(){var v=parseFloat(cz.value)||0;$('#ils').textContent='= ₪'+(v/C.perILS).toFixed(v/C.perILS<100?1:0)});
+}
+
+/* ---------- search ---------- */
+function norm(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')}
+function renderSearch(q){
+  var r=$('#results'),nq=norm(q);
+  var tagText=function(t){return (t||[]).map(function(k){return (TAGS[k]||[k])[0]+' '+k}).join(' ')};
+  var pl=(D.places||[]).filter(function(p){return norm([p.name,p.nameHe,p.area,p.subcategory,p.why,p.address,tagText(p.tags),(CAT[p.category]||[''])[0]].join(' ')).indexOf(nq)>=0});
+  var its=[];(D.days||[]).forEach(function(d,i){(d.items||[]).forEach(function(it,j){var p=itemPlace(it);
+    if(norm([it.title,it.note,p.name,p.nameHe,p.area,tagText(it.tags)].join(' ')).indexOf(nq)>=0)its.push({d:d,i:i,it:it,j:j})})});
+  var h='<div class="vh"><h2>תוצאות</h2><span class="sub">'+(pl.length+its.length)+'</span></div>';
+  if(its.length){h+='<div class="res-group">בלו״ז</div><div class="card"><ol class="tl">'+its.map(function(x){
+    return renderItem(x.d,Object.assign({},x.it,{note:'יום '+(x.i+1)+' · '+dm(x.d.date)+(x.it.note?' — '+x.it.note:'')}),x.j)}).join('')+'</ol></div>'}
+  if(pl.length){h+='<div class="res-group">מקומות</div>'+pl.map(function(p){return renderPlace(p,q)}).join('')}
+  if(!pl.length&&!its.length)h+='<div class="empty">לא נמצא דבר עבור "'+esc(q)+'"</div>';
+  r.innerHTML=h;
+}
+
+/* ---------- navigation ---------- */
+var TABS=['schedule','food','sights','night','shopping','practical'];
+function show(tab,noScroll){
+  if(TABS.indexOf(tab)<0)tab='schedule';
+  S.tab=tab;save();
+  var q=$('#q').value.trim();
+  $$('.view').forEach(function(v){v.classList.toggle('on',q?v.id==='results':v.dataset.tab===tab)});
+  $$('.tab').forEach(function(b){b.setAttribute('aria-selected',String(!q&&b.dataset.go===tab))});
+  if(location.hash.slice(1)!==tab){try{history.replaceState(null,'','#'+tab)}catch(e){}}
+  if(!noScroll)window.scrollTo({top:$('main').offsetTop-70,behavior:'auto'});
+}
+function renderAll(){renderSchedule();['food','sights','night','shopping'].forEach(renderCat);renderPractical()}
+
+/* ---------- header / status ---------- */
+function renderHeader(){
+  $('#t-title').textContent=M.title||'פראג';
+  document.title=(M.title||'פראג')+' — תוכנית הטיול';
+  var s=M.startDate,e=M.endDate;
+  $('#t-dates').textContent=s?(dayName(s)+' '+dm(s)+' – '+dayName(e)+' '+dm(e)):'';
+  $('#b-ver').textContent='עודכן '+(M.updatedAt?dm(M.updatedAt):'');
+  $('#sample').hidden=!M.sample;
+  var now=pragueNow(),st=$('#status');
+  var sub=M.subtitle?'<br><span style="opacity:.8;font-size:13.5px">'+esc(M.subtitle)+'</span>':'';
+  if(s&&now.date<s){var n=daysBetween(now.date,s);st.innerHTML=(n===1?'<b>מחר</b> טסים לפראג ✈️':'עוד <b>'+n+'</b> ימים לפראג ✈️')+sub}
+  else if(e&&now.date>e){st.innerHTML='הטיול הסתיים — מקווים שנהניתם 🍻'+sub}
+  else if(s){var i=daysBetween(s,now.date)+1;var d=(D.days||[]).filter(function(x){return x.date===now.date})[0];
+    st.innerHTML='יום <b>'+i+'</b> בפראג'+(d&&d.title?' · '+esc(d.title):'')+' · <span class="ltr">'+String(Math.floor(now.min/60)).padStart(2,'0')+':'+String(now.min%60).padStart(2,'0')+'</span> שעון פראג'}
+}
+function netBadge(){var on=navigator.onLine!==false,b=$('#b-net');b.classList.toggle('off',!on);b.lastElementChild.textContent=on?'מחובר':'אופליין — הכל זמין'}
+function applyTheme(){if(S.theme)document.documentElement.setAttribute('data-theme',S.theme);else document.documentElement.removeAttribute('data-theme')}
+
+/* ---------- sheet / toast ---------- */
+var tt;function toast(m){var t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(function(){t.classList.remove('on')},2200)}
+function openSheet(html){$('#sheet-box').innerHTML=html+'<button class="cta close" data-close>סגירה</button>';$('#sheet').classList.add('on')}
+function closeSheet(){$('#sheet').classList.remove('on')}
+function taxiSheet(name,addr){
+  openSheet('<div class="taxi"><p class="cz ltr">Dobrý den, prosím, odvezte mě na tuto adresu:</p><div class="nm ltr">'+esc(name)+'</div><div class="big ltr">'+esc(addr)+'</div>'+
+    '<p class="small muted">"שלום, בבקשה קח אותי לכתובת הזו" — הראו את המסך לנהג</p>'+
+    '<div class="acts" style="justify-content:center"><button class="act js" data-copy="'+esc(addr)+'">'+ic('copy')+'העתק</button><a class="act primary" target="_blank" rel="noopener" href="'+esc(mapsUrl({name:name,address:addr}))+'">'+ic('pin')+'מפה</a></div></div>');
+}
+function offlineHtml(){return '<ol class="steps">'+
+   '<li><b>להשאיר את הלשונית פתוחה.</b> הדף כולו (טקסט, מפות-קישורים, תמונות) נטען בפעם אחת ועובד בלי רשת — רק לא לרענן ולא לסגור.</li>'+
+   '<li><b>קובץ HTML בוואטסאפ.</b> נשלח גם כקובץ — הורידו אותו ופתחו מוואטסאפ או מאפליקציית <b>קבצים</b>/<b>הורדות</b>; עובד בלי אינטרנט.</li>'+
+   '<li><b>iPhone:</b> בספארי ← שיתוף ⬆️ ← <b>הוספה למסך הבית</b> לגישה מהירה (לבד זה לא מבטיח עבודה בלי רשת — לכן גם הקובץ).</li>'+
+   '<li><b>Google Maps אופליין:</b> להוריד את פראג מראש (פרטים בטאב <a href="#practical" data-go="practical">מעשי</a>) — כפתורי "מפה" ינווטו גם בלי רשת.</li></ol>'+
+   '<p class="small muted" style="margin:8px 0 0">סימוני "ביקרנו/בוצע" נשמרים בכל טלפון בנפרד.</p>'}
+function saveHelp(){openSheet('<h3>📴 איך לשמור לאופליין</h3>'+offlineHtml())}
+function snapshotHtml(){
+  var c=document.documentElement.cloneNode(true);
+  c.classList.add('snap');c.removeAttribute('data-theme');
+  $$('script',c).forEach(function(s){if(s.id!=='plan-data'&&s.id!=='app')s.parentNode.removeChild(s)});
+  $$('iframe,link[rel=preload]',c).forEach(function(n){n.parentNode.removeChild(n)});
+  $$('details',c).forEach(function(d){d.setAttribute('open','')});
+  var r=c.querySelector('#results');if(r)r.innerHTML='';
+  var sh=c.querySelector('#sheet');if(sh)sh.className='sheet';
+  var q=c.querySelector('#q');if(q)q.removeAttribute('value');
+  return '<!DOCTYPE html>\n'+c.outerHTML;
+}
+/* ---------- events ---------- */
+function copyText(t){
+  var ok=function(){toast('הועתק ✓')};
+  var legacy=function(){try{var ta=document.createElement('textarea');ta.value=t;ta.setAttribute('readonly','');ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();var r=document.execCommand('copy');ta.remove();if(r)ok();else taxiSheet('',t)}catch(e){taxiSheet('',t)}};
+  try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(ok,legacy);return}}catch(e){}
+  legacy();
+}
+document.addEventListener('click',function(e){
+  var el=e.target.closest('[data-go],[data-copy],[data-taxi],[data-chk],[data-jump],[data-sub],[data-close],[data-savehelp]');
+  if(!el){if(e.target.id==='sheet')closeSheet();return}
+  if(el.dataset.go){e.preventDefault();closeSheet();$('#q').value='';show(el.dataset.go);return}
+  if(el.hasAttribute('data-copy')){copyText(el.getAttribute('data-copy'));return}
+  if(el.hasAttribute('data-taxi')){taxiSheet(el.dataset.name,el.dataset.addr);return}
+  if(el.hasAttribute('data-close')){closeSheet();return}
+  if(el.hasAttribute('data-savehelp')){e.preventDefault();saveHelp();return}
+  if(el.dataset.chk){var id=el.dataset.chk,v=!S.checked[id];if(v)S.checked[id]=1;else delete S.checked[id];save();
+    $$('[data-chk="'+id.replace(/"/g,'\\"')+'"]').forEach(function(b){b.setAttribute('aria-pressed',String(v));var row=b.closest('.it,.pl');if(row)row.classList.toggle('done',v)});
+    if(v)toast('סומן ✓');return}
+  if(el.dataset.jump){var d=document.getElementById(el.dataset.jump);if(d){d.open=true;d.scrollIntoView({behavior:'smooth',block:'start'})}return}
+  if(el.hasAttribute('data-sub')){SUBF[el.dataset.cat]=el.dataset.sub;renderCat(el.dataset.cat);return}
+});
+$('#b-theme').addEventListener('click',function(){
+  var dark=S.theme?S.theme==='dark':matchMedia('(prefers-color-scheme: dark)').matches;
+  S.theme=dark?'light':'dark';applyTheme();save();
+});
+$('#b-search').addEventListener('click',function(){
+  var t=$('#top'),on=!t.classList.contains('searching');t.classList.toggle('searching',on);this.setAttribute('aria-pressed',String(on));
+  if(on)$('#q').focus();else{$('#q').value='';show(S.tab,true)}
+});
+var qt;$('#q').addEventListener('input',function(){clearTimeout(qt);qt=setTimeout(function(){var q=$('#q').value.trim();if(q)renderSearch(q);show(S.tab,true)},120)});
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closeSheet()});
+window.addEventListener('online',netBadge);window.addEventListener('offline',netBadge);
+window.addEventListener('hashchange',function(){var h=location.hash.slice(1);if(TABS.indexOf(h)>=0&&h!==S.tab)show(h)});
+
+/* ---------- boot ---------- */
+applyTheme();renderHeader();renderAll();netBadge();
+var h0=location.hash.slice(1);show(TABS.indexOf(h0)>=0?h0:S.tab,true);
+if(save()&&cachePlan())$('#b-cache').hidden=false;
+/* on trip days, open schedule at the current item */
+(function(){var now=pragueNow();if(M.startDate&&now.date>=M.startDate&&now.date<=M.endDate&&!h0){show('schedule',true);var t=$('.it.now')||$('.flag.next');if(t)setTimeout(function(){(t.closest?t.closest('.it'):t).scrollIntoView({block:'center'})},200)}})();
+setInterval(function(){markNow();renderHeader()},60000);
+document.addEventListener('visibilitychange',function(){if(!document.hidden){markNow();renderHeader()}});
+window.__plan={data:D,state:S,rerender:function(){renderHeader();renderAll();show(S.tab,true)},snapshot:snapshotHtml};
+})();
+</script>
+<script>if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})})}</script></body>
+</html>
